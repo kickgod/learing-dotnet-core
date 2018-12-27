@@ -8,7 +8,8 @@
 - [x] [`2.立即链接`](#connect) 
 - [x] [`3.执行命令`](#command) 
 - [x] [`4.Sql参数`](#parameter)
-
+- [x] [`5.获取数据集`](#reader)
+- [x] [`6.执行存储过程`](#store)
 -----
 ##### [`1.准备工作`](#top) :triangular_flag_on_post:  <b id="into"></b>
 `首先我们需要官方为我们提供的API 文件`
@@ -146,9 +147,31 @@ public Int32 ExecuteSqlReturnCount() {
 }
 ```
 ##### [`4.Sql参数`](#top) :triangular_flag_on_post:  <b id="parameter"></b>
-`通过链接字符串固然可以添加sql参数 ,但是那样子会被sql 注入攻击 所以我们使用 SqlParameter对象 和 @符号`
+`通过链接字符串固然可以添加sql参数 ,但是那样子会被sql 注入攻击 所以我们使用 实现了扩展了 DbParameter的 对象 和 使用参数占位符`
+
+
+##### 说明参数
+`DbParameter 对象可以通过使用其构造函数来创建，或者也可以通过调用 DbParameterCollection 集合的 Add 方法以将该对象添加到 DbParameterCollection 来创建。 Add 方法将构造函数实参或现有形参对象用作输入，具体取决于数据提供程序。` [`配置参数`](https://docs.microsoft.com/zh-cn/dotnet/framework/data/adonet/configuring-parameters-and-parameter-data-types)
+* `ParameterDirection 属性`:`在使用存储过程的时候才用得着`
+
+|`数据提供程序`|`参数命名语法`|
+|:---|:-----|
+|`Input 	`|`该参数为输入参数。 这是默认设置。`|
+|`InputOutput `	|`该参数可执行输入和输出。`|
+|`Output 	`|`该参数为输出参数。`|
+|`ReturnValue 	`|`该参数表示从某操作（如存储过程、内置函数或用户定义的函数）返回的值。`|
+
+##### 使用参数占位符
+
+|`数据提供程序`|` 	参数命名语法`|
+|:---|:-----|
+|`System.Data.SqlClient`| `	以 @参数名格式使用命名参数。`|
+|`System.Data.OleDb`| 	`使用由问号 (?) 指示的位置参数标记。`|
+|`System.Data.Odbc`| 	`使用由问号 (?) 指示的位置参数标记。`|
+|`System.Data.OracleClient`| `	以 :参数名 （或 参数名）格式使用命名参数。`|
+
 * `利用 SqlCommand的Parameters[SqlParameterCollection 类型] 添加参数`
-```c#
+```node
 public void ExecuteWithSqlParamter() {
     String val = @"select count(*) from students where studentAge = @Age and studentSex = @Sex";
     SqlConnection connection = getConnectionByBuilder();
@@ -170,7 +193,7 @@ public void ExecuteWithSqlParamter() {
 }
 ```
 * `设置参数的方法有两种`
-  * `先说明类型 再给与值`
+  * `先说明类型 再给与值`  	:two_hearts:
   
   ```c#
      String val = @"select count(*) from students where studentAge = @Age and studentSex = @Sex";
@@ -180,10 +203,134 @@ public void ExecuteWithSqlParamter() {
      command.Parameters["Sex"].Value = true;
   ```
   
-  * `类型和值直接给`:`因为他会自动推断`
+  *  `类型和值直接给`:`因为他会自动推断` 	:two_hearts: 
   
-  ```java
+  ```node
     String val = @"select count(*) from students where studentAge = @Age and studentSex = @Sex";
     command.Parameters.AddWithValue("Age", 20);
     command.Parameters.AddWithValue("Sex", true);
   ```
+  
+  
+##### [`5.获取数据集`](#top) :triangular_flag_on_post:  <b id="reader"></b>
+`执行这个方法 会返回一个SqlDataReader对象 SqlDataReader 使用变比后需要立即销毁 当然我们可以传入一些参数使得它自动被销毁,而不是手动销毁,因为我们总是有遗忘的时候！` ` SqlDataReader reader = command.ExecuteReader(CommandBehavior.CloseConnection);` `SqlConnection 关闭的时候 SqlDataReader也会自动关闭`
+
+```c#
+public void ExecuteReadTable()
+{
+    String val = @"select *  from students where studentSex = @Sex";
+    SqlConnection connection = getConnectionByBuilder();
+    SqlCommand command = connection.CreateCommand();
+    command.CommandText = val;
+    command.Parameters.AddWithValue("Sex", true);
+    command.CommandType = CommandType.Text;
+
+    SqlDataReader reader = command.ExecuteReader(CommandBehavior.CloseConnection);
+
+    if(reader.HasRows) {
+        //一行一行的
+        while (reader.Read()) {
+            int Id = Convert.ToInt32(reader["studentId"]);
+            String Name = Convert.ToString(reader["studentName"]);
+            int Age = Convert.ToInt32(reader["studentAge"]);
+            Boolean Sex = Convert.ToBoolean(reader["studentSex"]);
+
+            Console.WriteLine($"{Id} {Name} {Age} {Sex}");
+        }
+    }else{
+        Console.WriteLine("并没有发现任何数据");
+    }
+    command.Dispose();
+    connection.Close();
+    connection.Dispose();
+}
+```
+
+
+
+
+
+
+
+
+
+
+##### [`6.执行存储过程`](#top) :triangular_flag_on_post:  <b id="store"></b>
+`我来尝试执行一个存储过程 通过 ADO.NET`
+
+`新建一个存储过程`
+```sql
+create table lessons(
+	lessonId int primary key identity(1,1),
+	lessonName varchar(100) not null,
+	lessonStatus int 
+);
+
+go;
+
+create procedure [dbo].[InsertNewItemToLessons]
+(
+ @lessonName varchar(100),
+ @lessonStatus int,
+ n@val int output
+)
+as
+begin
+  declare @count int
+  select @count = count(*) from lessons where  lessonName = @lessonName
+  if @count = 0
+  begin
+  insert into lessons(lessonName,lessonStatus) values(@lessonName,@lessonStatus); 
+     select @val = lessonId from lessons where  lessonName = @lessonName
+  end;
+  else
+  begin
+  set @val = -1; -- 插入失败失败
+  end
+end;
+
+```
+`试着执行一下`
+```sql
+go;
+
+declare @out_val int;
+
+execute [dbo].[InsertNewItemToLessons] '大学数学',30, @out_val output;
+
+select @out_val
+```
+
+##### C# 程序
+```c#
+public void ExecuteProduceStore()
+{
+    String val = "[dbo].[InsertNewItemToLessons]"; //存储过程
+    SqlConnection connection = getConnectionByBuilder();
+    SqlCommand command = connection.CreateCommand();
+    command.CommandText = val;
+    command.CommandType = CommandType.StoredProcedure; //说明类型 是存储过程
+
+    SqlParameter name = new SqlParameter("@lessonName", SqlDbType.VarChar, 100);
+    name.Value = "数据结构";
+    name.Direction = ParameterDirection.Input;
+
+    SqlParameter age = new SqlParameter("@lessonStatus", SqlDbType.Int);
+    age.Value = 30;
+    age.Direction = ParameterDirection.Input;
+
+    SqlParameter lessonId = new SqlParameter("@val",SqlDbType.Int);
+    lessonId.Direction = ParameterDirection.Output;
+
+    command.Parameters.Add(name);
+    command.Parameters.Add(age);
+    command.Parameters.Add(lessonId);
+
+    command.ExecuteNonQuery();//执行它
+    Console.WriteLine(lessonId.Value);// 返回新插入行的 id
+
+    command.Dispose();
+    connection.Close();
+    connection.Dispose();
+}
+```
