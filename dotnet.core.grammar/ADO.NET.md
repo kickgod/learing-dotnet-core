@@ -8,8 +8,10 @@
 - [x] [`2.立即链接`](#connect) 
 - [x] [`3.执行命令`](#command) 
 - [x] [`4.Sql参数`](#parameter)
-- [x] [`5.获取数据集`](#reader)
-- [x] [`6.执行存储过程`](#store)
+- [x] [`5.读取Table`](#reader)
+- [x] [`6.存放到数据集`](#adapter)
+- [x] [`7.执行存储过程`](#store)
+- [x] [`8.DataAdapter 提供的分页功能`](#page)
 -----
 ##### [`1.准备工作`](#top) :triangular_flag_on_post:  <b id="into"></b>
 `首先我们需要官方为我们提供的API 文件`
@@ -212,9 +214,10 @@ public void ExecuteWithSqlParamter() {
   ```
   
   
-##### [`5.获取数据集`](#top) :triangular_flag_on_post:  <b id="reader"></b>
+##### [`5.读取Table`](#top) :triangular_flag_on_post:  <b id="reader"></b>
 `执行这个方法 会返回一个SqlDataReader对象 SqlDataReader 使用变比后需要立即销毁 当然我们可以传入一些参数使得它自动被销毁,而不是手动销毁,因为我们总是有遗忘的时候！` ` SqlDataReader reader = command.ExecuteReader(CommandBehavior.CloseConnection);` `SqlConnection 关闭的时候 SqlDataReader也会自动关闭`
-
+* `HasRows`:`判断是否具有数据`
+* `Read()`:`向前读取一行,表示是否具有数据`
 ```c#
 public void ExecuteReadTable()
 {
@@ -246,16 +249,64 @@ public void ExecuteReadTable()
 }
 ```
 
+##### [`6.存放到数据集`](#top) :triangular_flag_on_post:  <b id="adapter"></b>
+`SqlDataReader 通过Read 读取的数据是不持久的,并且只能向前读取数据 所以我们要保存读取的数据,怎么办呢？ 我们使用 DataAdapter  填充数据`
+`本质上 SqlDataAdapter 里面存储的是一个 DataTable 对象`
+* `SqlDataAdapter的 参数配置 ` [`官网`](https://docs.microsoft.com/zh-cn/dotnet/framework/data/adonet/dataadapter-parameters)
 
+##### 数据存储体系
 
+![data](https://docs.microsoft.com/zh-cn/dotnet/framework/data/adonet/media/ado-1-bpuedev11.png)
 
+##### DataAdapter
+```c#
+SqlConnection connection = getConnectionByBuilder();
+string queryString = "select *  from students";  
+SqlDataAdapter adapter = new SqlDataAdapter(queryString, connection);  
+DataSet students = new DataSet();  
+adapter.Fill(students, "myStudents");  
 
+```
+`DataSet 里面就多了一张表 表名为 myStudents SqlDataAdapter 里面存储的是一个 DataTable 对象`
 
+```c#
+public DataTable CarryOutSqlGeDataTable(string SentenceSql)
+{
+    if (SentenceSql == "")
+    {
+      return null;
+    }
+   SqlConnection con = GetSqlConnection();
+   if (con.State != ConnectionState.Open)
+   {
+      con.Open();
+   }
+   SqlCommand cmd = con.CreateCommand();
+   cmd.CommandType = CommandType.Text;
+   cmd.CommandText = SentenceSql;
+   SqlDataAdapter adapter= new SqlDataAdapter(cmd);
+   DataTable td =new DataTable();
+   adapter.Fill(td);
+   return td;
+} 
+```
+##### 如何读取 DataTable里面的数据呢？
+`很简单的 下面一个实例 可供参考`
+```c#
+  DataTable td = getTable.GetAllDataFromtblProductTypeInfo();
+  if (td.Rows.Count > 0)
+  {
+     foreach (DataRow row in td.Rows)
+     {
+        ListItem itemSItem = new ListItem();
+        itemSItem.Value = row["typeID"].ToString();
+        itemSItem.Text = row["typeName_c"].ToString();
+        ddlShoosProductTypes.Items.Add(itemSItem);
+     }
+  }
+```
 
-
-
-
-##### [`6.执行存储过程`](#top) :triangular_flag_on_post:  <b id="store"></b>
+##### [`7.执行存储过程`](#top) :triangular_flag_on_post:  <b id="store"></b>
 `我来尝试执行一个存储过程 通过 ADO.NET`
 
 `新建一个存储过程`
@@ -333,4 +384,18 @@ public void ExecuteProduceStore()
     connection.Close();
     connection.Dispose();
 }
+```
+
+##### [`8.DataAdapter提供的分页功能`](#top) :triangular_flag_on_post:  <b id="page"></b>
+[`看官网吧`](https://docs.microsoft.com/zh-cn/dotnet/framework/data/adonet/paging-through-a-query-result)
+```c#
+int currentIndex = 0;  
+int pageSize = 5;  
+  
+string orderSQL = "SELECT * FROM Orders ORDER BY OrderID";  
+ 
+SqlDataAdapter adapter = new SqlDataAdapter(orderSQL, connection);  
+  
+DataSet dataSet = new DataSet();  
+adapter.Fill(dataSet, currentIndex, pageSize, "Orders");  
 ```
