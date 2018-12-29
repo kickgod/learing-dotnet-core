@@ -1,5 +1,5 @@
 ### [NetCore 异步编程](#top) :grey_exclamation: <b id="top"></b>
-`NET Core 异步编程很强的哟,Net Core提供了非常舒服的方式用于异步编程,当然先把基础学了再说`:white_check_mark: 
+`NET Core 异步编程很强的哟,Net Core提供了非常舒服的方式用于异步编程,当然先把基础学了再说,核心 异步只是多线程使用方式的一种,异步的核心是： 多个线程之间没有任何关系,相互之间没有执行顺序依赖,也不依赖另一个线程的执行结果`:white_check_mark: 
 [`官方文档`](https://docs.microsoft.com/zh-cn/dotnet/standard/async)
 
 ---
@@ -11,7 +11,7 @@
 > - [x] [`5.基于任务的异步模式 TAP [掌握它]`](#task)
 ----
 #####  :octocat: [1.搞清楚异步和多线程](#top) <b id="know"></b>
-`异步和多线程有什么区别？其实，异步是目的，而多线程是实现这个目的的方法。`
+`异步和多线程有什么区别？其实，异步是目的，而多线程是实现这个目的的方法。`  [`请看完概念再看异步编程`](https://github.com/kickgod/learing-dotnet-core/blob/master/dotnet.core.grammar/Netcore2.1_Thread_1.md)
 > `异步是说，A发起一个操作后（一般都是比较耗时的操作，如果不耗时的操作就没有必要异步了），可以继续自顾自的处理它自己的事儿，不用干
 等着这个耗时操作返回。.Net中的这种异步编程模型，就简化了多线程编程，我们甚至都不用去关心Thread类，就可以做一个异步操作出来。`
 * `多线程和异步的相同：都可以解决线程阻塞，响应慢的问题。`
@@ -125,10 +125,49 @@ static void Main(string[] args)
 ###### 多用于 winFrom 那么懂它就行了
 
 #####  :octocat: [5. 基于任务的异步模式](#top) <b id="task"></b> 
+`来吧 先不要看什么概念,上面已经看够了吧,那么我们直接开始写代码,通过代码学习多线程！`
+
+##### 1. 利用Task 完成一个异步操作 报名字
 ```c#
+static void Main()
+{
+    Action<String> action = (name)=>{
+        Console.WriteLine($"Name:{ name}");
+    };
 
+    Task.Run(()=> {
+        action("Kicker");
+    });
+
+    Console.WriteLine($"In Run at Here");
+
+    Console.ReadKey();
+}
 ```
+##### 2. 调用异步方法
+`体验一下 说 Hello  这个调用异步方法的时候 不需要异步方法有任何的 返回值`
+```c#
+static void Main()
+{
+    CallerSaidNameAsync();
+    Console.ReadKey();
+}
 
+static Task SaidNameAsync(String name) {
+    return Task.Run(()=>
+    {
+        Console.WriteLine($"Name:{name}");
+    });
+}
+
+static async void CallerSaidNameAsync() {
+    SaidNameAsync("Kicker");
+    Console.WriteLine($"In Run at Here");
+}
+//SaidNameAsync("kicker"); 可以到 Main 直接调用
+```
+* `async`:` 只能修饰用于返回.NET 类型的Task 或者 void 方法 已经Windows运行库的IAsyncOperation 它不能用于程序的入口点,即 Main 方法
+不能使用 async 修饰 await 只能用于 返回Task的方法`
 
 
 
