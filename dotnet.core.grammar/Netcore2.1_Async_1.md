@@ -19,11 +19,19 @@
   * `异步线程可以减少共享变量，减少死锁可能，异步操作无须额外的线程负担。但采用回调方式复杂度较高，切不易调试。多线程程中的处理程
   序依然是顺序执行，编程相对简单而且易理解，但编程简单本质上是进程中一段并发运行的代码，需要操作系统投入CPU资源来运行和调度，
 ，线程的使用（滥用）会给系统带来上下文切换的额外负担。并且线程间的共享变量可能造成死锁的出现。`
-
 * `异步适用于IO操作（文件，网络数据修改，数据库操作、Web Service、HttpRequest以及.Net Remoting等跨进程的调用）`
 * `多线程适用于需要长时间CPU运算的场合（例如耗时较长的图形处理和算法执行） 例如 编译器 浏览器之类的桌面应用程序 大型计算应用程序`
 * `可以使用线程来执行耗时较长的I/O操作。只适用于只有少数几个并发操作的时候，如果需要处理大量的并发操作时就不合适。因为大量线程
 可能会导致死机卡死,而异步却可以避免`
+
+```node
+0-1————————————————————————————————————————————————–2-3
+
+从点 0 到 1 所花费时间很长，直到异步方法将控制让步于其调用方才结束。
+从点 1 到点 2 所用时间是花费在 I/O 上的时间，且 CPU 没有耗时。
+最后，点 2 到点 3 所花费时间用于将控制（和可能的值）传递回异步方法，此时将再次执行。
+```
+
 #####  :octocat: [2.异步编程介绍](#top) <b id="intro"></b>
 `使用异步编程,防止单线程调用阻塞,Net Core支持三种不同的异步编程方法`
 * [`普通的异步模式`](https://docs.microsoft.com/zh-cn/dotnet/standard/asynchronous-programming-patterns/asynchronous-programming-model-apm)
@@ -126,7 +134,8 @@ static void Main(string[] args)
 
 #####  :octocat: [5. 基于任务的异步模式](#top) <b id="task"></b> 
 `来吧 先不要看什么概念,上面已经看够了吧,那么我们直接开始写代码,通过代码学习多线程！`
-
+* `Task 表示不返回值的单个操作。`
+* `Task<T> 表示返回 T 类型的值的单个操作。`
 ##### 1. 利用Task 完成一个异步操作 报名字
 ```c#
 static void Main()
@@ -168,16 +177,34 @@ static async void CallerSaidNameAsync() {
 ```
 * `async`:` 只能修饰用于返回.NET 类型的Task 或者 void 方法 已经Windows运行库的IAsyncOperation 它不能用于程序的入口点,即 Main 方法
 不能使用 async 修饰 await 只能用于 返回Task的方法`
+* `await`:``
+```c#
+static void Main()
+{
+    CallerSaidNameAsync();
+    Console.WriteLine("我最先执行哟");
+    Console.WriteLine("我继续执行");
+    Console.ReadKey();
+}
 
+static Task SaidNameAsync(String name) {
+    return Task.Run(()=>
+    {
+        Console.WriteLine($"Name:{name}");
+    });
+}
 
+static async void CallerSaidNameAsync() {
+    await SaidNameAsync("Zlm");
+    await SaidNameAsync("Ajak");
+    Console.WriteLine($"In Run at Here");
+}
+```
 
 
 
 
 * `基于任务的异步模式 (TAP) 以 System.Threading.Tasks.Task 命名空间中的 System.Threading.Tasks.Task<TResult> 和 System.Threading.Tasks 类型为基础，这些类型用于表示任意异步操作。 对于新的开发项目，建议采用 TAP 作为异步设计模式。`
-
 * `这与异步编程模型（APM 或 IAsyncResult）模式和基于事件的异步模式 (EAP) 不同，APM 要求使用 Begin 和 End 方法，而 EAP 需要具有 Async 后缀的方法，还需要一个或多个事件、事件处理程序委托类型和 EventArg 派生类型。 `
-
 * ` TAP 中的异步方法在操作名称后面添加 Async 后缀；例如，Get 操作变为 GetAsync, 如果要将 TAP 方法添加到一个类中，而该类中已包含带有 Async 后缀的相同方法名称，请改用后缀 TaskAsync。 例如，如果类中已有 GetAsync 方法，请使用名称 GetTaskAsync。`
-
 * `TAP 方法返回 System.Threading.Tasks.Task 或 System.Threading.Tasks.Task<TResult>，具体取决于相应同步方法返回的是 void 还是类型 TResult。`
