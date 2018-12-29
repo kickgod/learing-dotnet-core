@@ -3,6 +3,7 @@
 ----
 `Dotnet 语法,这是一门爱好！ 日日学习！ 不敢断绝,全菜工程师`
 
+- [x] [`1 DotNet C# 基础语法移步`](https://github.com/kickgod/Rear-End/tree/master/CSharp/Basic)
 
 
 ----
