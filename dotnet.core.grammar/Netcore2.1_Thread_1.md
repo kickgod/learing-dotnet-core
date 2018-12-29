@@ -68,10 +68,7 @@
 * `并行编程`:`.NET 推荐 任务并行库 (TPL) `
 
 -----
-
-![.NET 并行编程体系](https://docs.microsoft.com/zh-cn/dotnet/standard/parallel-programming/media/tpl-architecture.png)
-
-
+`C# 对于异步编程具有很多的思考,设计了非常多的模式 推荐你一定要看 顶部的链接 .NET 多线程发展简史`
 
 
 
