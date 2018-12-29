@@ -7,8 +7,8 @@
 > - [x] [`2.异步编程介绍`](#intro) 
 >   - [`依赖命名空间`](#using)
 > - [x] [`3.普通的异步模式`](#async)
-> - [x] [`4.基于事件的异步模式`](#event)
-> - [x] [`5.基于任务的异步模式`](#task)
+> - [x] [`4.基于事件的异步模式 EAP`](#event)
+> - [x] [`5.基于任务的异步模式 TAP [掌握它]`](#task)
 ----
 #####  :octocat: [1.搞清楚异步和多线程](#top) <b id="know"></b>
 `异步和多线程有什么区别？其实，异步是目的，而多线程是实现这个目的的方法。`
@@ -110,7 +110,7 @@ static void Main(string[] args)
     Console.ReadKey();
 }
 ```
-#####  :octocat: [4. 基于事件的异步模式](#top) <b id="event"></b> 
+#####  :octocat: [4. 基于事件的异步模式 EAP](#top) <b id="event"></b> 
 [`官网资料`](https://docs.microsoft.com/zh-cn/dotnet/standard/asynchronous-programming-patterns/event-based-asynchronous-pattern-eap)
 * `基于事件的异步模式具有多线程应用程序的优点，同时隐藏了多线程设计中固有的许多复杂问题。 使用支持此模式的类，你将能够：`
     * `“在后台”执行耗时任务（例如下载和数据库操作），但不会中断你的应用程序。`
@@ -125,4 +125,20 @@ static void Main(string[] args)
 ###### 多用于 winFrom 那么懂它就行了
 
 #####  :octocat: [5. 基于任务的异步模式](#top) <b id="task"></b> 
-``
+```c#
+
+```
+
+
+
+
+
+
+
+* `基于任务的异步模式 (TAP) 以 System.Threading.Tasks.Task 命名空间中的 System.Threading.Tasks.Task<TResult> 和 System.Threading.Tasks 类型为基础，这些类型用于表示任意异步操作。 对于新的开发项目，建议采用 TAP 作为异步设计模式。`
+
+* `这与异步编程模型（APM 或 IAsyncResult）模式和基于事件的异步模式 (EAP) 不同，APM 要求使用 Begin 和 End 方法，而 EAP 需要具有 Async 后缀的方法，还需要一个或多个事件、事件处理程序委托类型和 EventArg 派生类型。 `
+
+* ` TAP 中的异步方法在操作名称后面添加 Async 后缀；例如，Get 操作变为 GetAsync, 如果要将 TAP 方法添加到一个类中，而该类中已包含带有 Async 后缀的相同方法名称，请改用后缀 TaskAsync。 例如，如果类中已有 GetAsync 方法，请使用名称 GetTaskAsync。`
+
+* `TAP 方法返回 System.Threading.Tasks.Task 或 System.Threading.Tasks.Task<TResult>，具体取决于相应同步方法返回的是 void 还是类型 TResult。`
