@@ -133,7 +133,7 @@ static void Main(string[] args)
 ###### 多用于 winFrom 那么懂它就行了
 
 #####  :octocat: [5. 基于任务的异步模式](#top) <b id="task"></b> 
-`来吧 先不要看什么概念,上面已经看够了吧,那么我们直接开始写代码,通过代码学习多线程！`
+`来吧 先不要看什么概念,上面已经看够了吧,那么我们直接开始写代码,通过代码学习异步编程！`
 * `Task 表示不返回值的单个操作。`
 * `Task<T> 表示返回 T 类型的值的单个操作。`
 ##### 1. 利用Task 完成一个异步操作 报名字
@@ -177,7 +177,7 @@ static async void CallerSaidNameAsync() {
 ```
 * `async`:` 只能修饰用于返回.NET 类型的Task 或者 void 方法 已经Windows运行库的IAsyncOperation 它不能用于程序的入口点,即 Main 方法
 不能使用 async 修饰 await 只能用于 返回Task的方法`
-* `await`:``
+* `await`: `运算符应用于异步方法中的任务，在方法的执行中插入挂起点，直到所等待的任务完成。 任务表示正在进行的工作。仅可用于由 async 关键字修改的异步方法中`
 ```c#
 static void Main()
 {
@@ -200,11 +200,87 @@ static async void CallerSaidNameAsync() {
     Console.WriteLine($"In Run at Here");
 }
 ```
+##### 连续任务
+`Task 类定义了一个 ContinueWith 方法[还有泛型支持] ContinueWith<TResult> 它定义了任务完成后就调用的代码,指派给ContinueWith方法的委托接受已完成的任务作为参数传入,使用Result属性可以访问任务返回的结果`
+```c#
+static void Main()
+{
+    CallerGetGreat();
+    Console.WriteLine("It Run Here!");
+    Console.ReadKey();
+}
 
+static Task<Int32> GetGreatAsync(int Number) {
+    return Task<Int32>.Run(() =>
+    {
+        return Number * Number * Number * 3 * 2 * 1;
+    });
+}
+static async void CallerGetGreat() {
 
+    Tuple<Boolean, Int32> calResult = await GetGreatAsync(10).ContinueWith<Tuple<Boolean,Int32> >( (t)=> {
+        Int32 result = t.Result;
+        if (result > Int32.MaxValue)
+        {
+            return Tuple.Create(true,result);
+        }
+        else {
+          return Tuple.Create(false, result);
+      }
+    });
+    Console.WriteLine($"是否越界:{calResult.Item1} 结果值:{calResult.Item2}");
+}
+```
+##### 按照顺序调用异步方法
+`在一个异步方法里面,可以调用一个或多个异步方法,如何编程代码,取决于一个异步方法的结果是否依赖于另一个异步方法`
+`使用await 将会按照顺序调用异步方法 当然这也会产生性能降低 因为一旦使用了这个 await 异步就编程同步了`
+```c#
+static async void call()
+{
+    var rs1 = await GetGreatAsync(20);
+    var rs2 = await GetGreatAsync(25);
+    Console.WriteLine($"{rs1}, {rs2}");
+}
+```
+`var rs2 =  GetGreatAsync(21).Result; 一旦你需要依赖异步方法的返回值的时候,那么那一部分代码就会同步执行,因为 方法有变量依赖于异步方法的返回值
+,说白了 我的 rs1 不赋值 我怎么接着执行 所以我要等 rs1 赋值完了 我再执行下一条语句。`
+```c#
+static async void call()
+{
+    var rs1 = GetGreatAsync(20).Result;
+    var rs2 = GetGreatAsync(25).Result;
+    Console.WriteLine($"{rs1}, {rs2}");
+}
+```
+##### 使用组合器
+`如果异步方法不依赖于其他异步方法,那么完全可以不使用 await 关键字，而是把每一个异步方法的返回结果赋值给Task 变量` `WhenAll WhenAny`
+```c#
+//WhenAll 我等你都执行完毕 再说
+static async void call()
+{
+    Task<Int32> rs1 =  GetGreatAsync(20);
+    Task<Int32> rs2 =  GetGreatAsync(21);
+    Task<Int32> rs3 = GetGreatAsync(20);
+    Task<Int32> rs4 = GetGreatAsync(21);
+    Int32[] vals = await Task.WhenAll(rs1, rs2, rs3, rs4);
+    // r1,r2,r3,r4 执行顺序任意
+    Console.WriteLine($"{vals[0]}, {vals[1]}");
+}
+```
+`WhenAny 的意思是 任意一个 方法可用于异步等待多个表示为要完成的任务的异步操作之一。`
+```c#
+static async void call()
+{
+    Task<Int32> rs1 =  GetGreatAsync(20);
+    Task<Int32> rs2 =  GetGreatAsync(21);
+    Task<Int32> rs3 = GetGreatAsync(20);
+    Task<Int32> rs4 = GetGreatAsync(21);
+    Task<Int32> vals = await Task.WhenAny(rs1, rs2, rs3, rs4);
+    Console.WriteLine($"{vals.Result}");
+}
+```
 
-
-* `基于任务的异步模式 (TAP) 以 System.Threading.Tasks.Task 命名空间中的 System.Threading.Tasks.Task<TResult> 和 System.Threading.Tasks 类型为基础，这些类型用于表示任意异步操作。 对于新的开发项目，建议采用 TAP 作为异步设计模式。`
+* `对于新的开发项目，建议采用 TAP 作为异步设计模式。`
 * `这与异步编程模型（APM 或 IAsyncResult）模式和基于事件的异步模式 (EAP) 不同，APM 要求使用 Begin 和 End 方法，而 EAP 需要具有 Async 后缀的方法，还需要一个或多个事件、事件处理程序委托类型和 EventArg 派生类型。 `
 * ` TAP 中的异步方法在操作名称后面添加 Async 后缀；例如，Get 操作变为 GetAsync, 如果要将 TAP 方法添加到一个类中，而该类中已包含带有 Async 后缀的相同方法名称，请改用后缀 TaskAsync。 例如，如果类中已有 GetAsync 方法，请使用名称 GetTaskAsync。`
-* `TAP 方法返回 System.Threading.Tasks.Task 或 System.Threading.Tasks.Task<TResult>，具体取决于相应同步方法返回的是 void 还是类型 TResult。`
+* `TAP 方法返回Task 或 Task<TResult>，具体取决于相应同步方法返回的是 void 还是类型 TResult。`
