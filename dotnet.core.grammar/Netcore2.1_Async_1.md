@@ -258,8 +258,8 @@ static async void call()
 ```
 ##### 使用组合器
 `如果异步方法不依赖于其他异步方法,那么完全可以不使用 await 关键字，而是把每一个异步方法的返回结果赋值给Task 变量` `WhenAll WhenAny`
-* `WhenAll`:`返回的是所有任务执行完后的Task 一个数组`
-* `WhenAny`:`其中一个传入方法的任务完成了,就会返回Task`
+* `WhenAll`:`返回的是所有任务执行完后的Task 一个数组 此时Task 并行调用`
+* `WhenAny`:`其中一个传入方法的任务完成了,就会返回Task,此时Task 并行调用`
 ```c#
 //WhenAll 我等你都执行完毕 再说
 static async void call()
@@ -306,6 +306,221 @@ private static async void CovertAsyncToTask() {
 }
 ```
 * `对于新的开发项目，建议采用 TAP 作为异步设计模式。`
+##### 错误处理
+`异步编程,有一些特殊处理方式,你会发现 下面的try catch无法捕获异常`
+```c#
+static void Main()
+{
+    try
+    {
+        ThrowException("throw the Exception",2000);
+    }
+    catch (Exception ex) {
+        Console.WriteLine(ex.Message);
+    }
+
+    Console.WriteLine("It Run At Here");
+    Console.ReadKey();
+
+}
+
+static async Task ThrowException(String message = "",Int32 ms = 1500) {
+    await Task.Delay(ms);
+    throw new Exception(message);
+}
+```
+* `结论: 异步方法的异常无法再外部进行捕获,只能够在内部处理,或者加上 await 关键字`
+
+----
+* `await 关键字 将其放在 tyr/catch 语句中,如一下代码块所示 异步调用ThrowException 方法之后 run 方法就会释放线程,但它会在任务完成的时候
+保存任务的引用,那么1秒后 抛出异常,会调用`
+```c#
+static void Main() {
+
+    run();
+    Console.WriteLine("It Run At Here");
+    Console.ReadKey();
+}
+
+
+static async void run()
+{
+    try
+    {
+        await ThrowException("throw the Exception",1000);
+    }
+    catch (Exception ex) {
+        Console.WriteLine(ex.Message);
+    }
+}
+
+static async Task ThrowException(String message = "",Int32 ms = 1500) {
+    await Task.Delay(ms);
+    throw new Exception($"Handle {message}");
+}
+```
+##### 多个异常方法的错误呢？
+`下面的方法只有 1000毫秒的 任务的异常先被捕获了,第二个任务的异常尚未被处理`
+```c#
+static void Main() {
+
+    run();
+    Console.WriteLine("It Run At Here");
+    Console.ReadKey();
+}
+
+/*
+ It Run At Here
+ Handle throw the Exception1
+
+*/
+static async void run()
+{
+    try
+    {
+        await ThrowException("throw the Exception1",1000);
+        await ThrowException("throw the Exception2", 2000);
+    }
+    catch (Exception ex) {
+        Console.WriteLine(ex.Message);
+    }
+}
+
+static async Task ThrowException(String message = "",Int32 ms = 1500) {
+    await Task.Delay(ms);
+    throw new Exception($"Handle {message}");
+}
+```
+`那我们等他们两个都完成怎么样`
+```c#
+static async void run()
+{
+    try
+    {
+        Task t1 =  ThrowException("throw the Exception1",1000);
+        Task t2 = ThrowException("throw the Exception2", 2000);
+        await Task.WhenAll(t1, t2);
+    }
+    catch (Exception ex) {
+        Console.WriteLine(ex.Message);
+    }
+}
+```
+`结果还是这样...只能捕获到第一个方法的异常`
+
+##### 通过 IsFaulted [单词 Fault:缺点,故障,毛病]
+* `IsCanceled`:` 如果任务由于被取消而完成，则为 true；否则为 false。`
+* `IsFaulted`:`如果任务引发了未经处理的异常，则为 true；否则为 false。`
+* `IsCompleted`:`如果任务已完成，则为 true；否则为 false。`
+* `public AggregateException Exception { get; }  导致 System.AggregateException 提前结束的 System.Threading.Tasks.Task。
+成功完成或尚未引发任何异常，这将返回 null。`
+* `Exception.InnerException `:`获取任务中抛出的异常对象`
+```c#
+static async void run()
+{
+    Task t1 = null;
+    Task t2 = null;
+    try
+    {
+         t1 = ThrowException("throw the Exception1", 1000);
+         t2 = ThrowException("throw the Exception2", 2000);
+        await Task.WhenAll(t1, t2);
+    }
+    catch (Exception ex) {
+        if (t1.IsFaulted)
+        {
+            Console.WriteLine($"t1 发送异常 {t1.Exception.InnerException.Message}");
+        }
+        if (t2.IsFaulted)
+        {
+            Console.WriteLine($"t2 发送异常 {t2.Exception.InnerException.Message}");
+        }
+    }
+}
+```
+`另一种写法`
+```c#
+static async void run()
+{
+    Task TaskResult = null;
+    try
+    {
+        Task t1 = ThrowException("throw the Exception1", 1000);
+        Task t2 = ThrowException("throw the Exception2", 2000);
+        await (TaskResult = Task.WhenAll(t1, t2));
+    }
+    catch (Exception ex) {
+        Console.WriteLine("Catch Error:"+ ex.Message);
+        foreach (var tk in TaskResult.Exception.InnerExceptions) {
+            Console.WriteLine(tk.Message);
+        }
+    }
+    /*
+     It Run At Here
+     Catch Error:Handle throw the Exception1
+     Handle throw the Exception1
+     Handle throw the Exception2
+     */
+}
+```
+##### 取消任务
+`有时候,后台可能运行很长时间的任务，那么这时候取消任务就非常有用了,对于取消任务,.NET 提供了一种标准机制,这种机制可以用于基于任务的异步模式`
+* `取消框架,基于协议行为,不是强制性的.一个运行时间很长的任务需要检查自己是否被取消,在这种情况下,她的任务就是清理意见打开的资源,并结束相关工作`
+* `取消基于 CancellationTokenSource,该类可用于发送取消请求，请求发送给 引用CancellationTokenSource类的任务 其中CancellationToken和
+CancellationTokenSource 类相关联.`
+
+##### Task 构造函数可以接受 CancellationTokenSource
+```c#
+public Task(Action action, CancellationToken cancellationToken);
+public Task(Action action, CancellationToken cancellationToken, TaskCreationOptions creationOptions);
+```
+
+
+```c#
+class UseCancellationTokenSource
+{
+    public static CancellationTokenSource ctl;
+    static void Main()
+    {
+        CanCancellTask();
+
+        Task.Run(() =>
+        {
+            Task.Delay(3000).Wait();
+            cancelTask();
+        });
+
+        Console.WriteLine("It Run At Here");
+        Console.ReadKey();
+    }
+
+    public static void cancelTask() {
+        ctl?.Cancel();
+       // ctl.CancelAfter(TimeSpan.Parse(DateTime.Now.AddSeconds(5).ToString()));
+    }
+
+    public static async void CanCancellTask() {
+        try
+        {
+            ctl = new CancellationTokenSource();
+            var url = "https://github.com/kickgod/Front-End/blob/master/RESOURCE.md";
+            var client = new HttpClient();
+            var response = await client.GetAsync(url, ctl.Token);
+            String resp = await response.Content.ReadAsStringAsync();
+
+            Console.WriteLine(resp);
+        }
+        catch (Exception ex){
+            Console.WriteLine(ex.Message);
+        }
+
+    }
+
+```
+
 * `这与异步编程模型（APM 或 IAsyncResult）模式和基于事件的异步模式 (EAP) 不同，APM 要求使用 Begin 和 End 方法，而 EAP 需要具有 Async 后缀的方法，还需要一个或多个事件、事件处理程序委托类型和 EventArg 派生类型。 `
 * ` TAP 中的异步方法在操作名称后面添加 Async 后缀；例如，Get 操作变为 GetAsync, 如果要将 TAP 方法添加到一个类中，而该类中已包含带有 Async 后缀的相同方法名称，请改用后缀 TaskAsync。 例如，如果类中已有 GetAsync 方法，请使用名称 GetTaskAsync。`
 * `TAP 方法返回Task 或 Task<TResult>，具体取决于相应同步方法返回的是 void 还是类型 TResult。`
+
+--------------------
+`异步编程大法好啊！`
