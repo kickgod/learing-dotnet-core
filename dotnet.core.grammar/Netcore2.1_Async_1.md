@@ -118,6 +118,10 @@ static void Main(string[] args)
     Console.ReadKey();
 }
 ```
+`BeginInvoke`:<br/>
+* `第一个参数是调用work方法的参数`
+* `第二个是回调函数`
+* `第三个是需要传到回调函数里的参数可以是Object类型`
 #####  :octocat: [4. 基于事件的异步模式 EAP](#top) <b id="event"></b> 
 [`官网资料`](https://docs.microsoft.com/zh-cn/dotnet/standard/asynchronous-programming-patterns/event-based-asynchronous-pattern-eap)
 * `基于事件的异步模式具有多线程应用程序的优点，同时隐藏了多线程设计中固有的许多复杂问题。 使用支持此模式的类，你将能够：`
@@ -254,6 +258,8 @@ static async void call()
 ```
 ##### 使用组合器
 `如果异步方法不依赖于其他异步方法,那么完全可以不使用 await 关键字，而是把每一个异步方法的返回结果赋值给Task 变量` `WhenAll WhenAny`
+* `WhenAll`:`返回的是所有任务执行完后的Task 一个数组`
+* `WhenAny`:`其中一个传入方法的任务完成了,就会返回Task`
 ```c#
 //WhenAll 我等你都执行完毕 再说
 static async void call()
@@ -279,7 +285,26 @@ static async void call()
     Console.WriteLine($"{vals.Result}");
 }
 ```
+##### 将异步模式转换为基于任务的异步模式
+`为什么要转换呢? 因为有些类并没有实现基于任务的异步方法`
+```c#
+static Func<Int32, Int32> GetFunc = (num) =>
+{
+    return num * num * num * 3 * 2 * 1;
+};
 
+static IAsyncResult BeginGetSum(Int32 number, AsyncCallback callback, object state) {
+    return GetFunc.BeginInvoke(number, callback, state);
+}
+
+static Int32 EndGetSum(IAsyncResult ar) {
+    return GetFunc.EndInvoke(ar);
+}
+
+private static async void CovertAsyncToTask() {
+    Int32 res = await Task<Int32>.Factory.FromAsync<Int32>(BeginGetSum, EndGetSum, 32, null);
+}
+```
 * `对于新的开发项目，建议采用 TAP 作为异步设计模式。`
 * `这与异步编程模型（APM 或 IAsyncResult）模式和基于事件的异步模式 (EAP) 不同，APM 要求使用 Begin 和 End 方法，而 EAP 需要具有 Async 后缀的方法，还需要一个或多个事件、事件处理程序委托类型和 EventArg 派生类型。 `
 * ` TAP 中的异步方法在操作名称后面添加 Async 后缀；例如，Get 操作变为 GetAsync, 如果要将 TAP 方法添加到一个类中，而该类中已包含带有 Async 后缀的相同方法名称，请改用后缀 TaskAsync。 例如，如果类中已有 GetAsync 方法，请使用名称 GetTaskAsync。`
