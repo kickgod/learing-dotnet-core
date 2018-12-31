@@ -194,25 +194,31 @@ public void ExecuteWithSqlParamter() {
     connection.Dispose();
 }
 ```
-* `设置参数的方法有两种`
-  * `先说明类型 再给与值`  	:two_hearts:
-  
-  ```c#
-     String val = @"select count(*) from students where studentAge = @Age and studentSex = @Sex";
-     command.Parameters.Add("Age", SqlDbType.Int);
-     command.Parameters["Age"].Value = 20;
-     command.Parameters.Add("Sex", SqlDbType.Bit);
-     command.Parameters["Sex"].Value = true;
+**`设置参数的方法有两种`** <br/>
+`先说明类型 再给与值`  	:two_hearts: <br/>
+```c#
+String val = @"select count(*) from students where studentAge = @Age and studentSex = @Sex";
+command.Parameters.Add("Age", SqlDbType.Int);
+command.Parameters["Age"].Value = 20;
+command.Parameters.Add("Sex", SqlDbType.Bit);
+command.Parameters["Sex"].Value = true;
+```
+`类型和值直接给`:`因为他会自动推断` 	:two_hearts:  <br/>
+```node
+String val = @"select count(*) from students where studentAge = @Age and studentSex = @Sex";
+command.Parameters.AddWithValue("Age", 20);
+command.Parameters.AddWithValue("Sex", true);
   ```
-  
-  *  `类型和值直接给`:`因为他会自动推断` 	:two_hearts: 
-  
-  ```node
-    String val = @"select count(*) from students where studentAge = @Age and studentSex = @Sex";
-    command.Parameters.AddWithValue("Age", 20);
-    command.Parameters.AddWithValue("Sex", true);
-  ```
-  
+##### 一个参数的基本信息包括
+```c#
+SqlParameter parameter = new SqlParameter();
+parameter.ParameterName = "@CategoryName"; //参数名称
+parameter.SqlDbType = SqlDbType.NVarChar; //参数类型
+parameter.Direction = ParameterDirection.Input; //参数的方向
+parameter.Value = "Football"; //参数值
+
+command.Parameters.Add(parameter);
+```
   
 ##### [`5.读取Table`](#top) :triangular_flag_on_post:  <b id="reader"></b>
 `执行这个方法 会返回一个SqlDataReader对象 SqlDataReader 使用变比后需要立即销毁 当然我们可以传入一些参数使得它自动被销毁,而不是手动销毁,因为我们总是有遗忘的时候！` ` SqlDataReader reader = command.ExecuteReader(CommandBehavior.CloseConnection);` `SqlConnection 关闭的时候 SqlDataReader也会自动关闭`
