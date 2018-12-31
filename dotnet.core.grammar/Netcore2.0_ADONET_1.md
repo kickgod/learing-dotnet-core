@@ -30,7 +30,7 @@
    * `Persist Security Info=False`:`这可确保不受信任的来源不能访问安全敏感信息 默认值为 false 尽量不要设置为 true 不安全`
 
 ##### [`SqlConnection 对象`](#top)
-* `SqlConnection 具有两个事件`
+* `SqlConnection 用于链接 SQL Server 具有两个事件 `
   * `InfoMessage`:` SQL SERVER 传递过来的消息或者警告`
   * `StateChange`:`链接状态改变的事件 `
 ```C#
@@ -104,6 +104,37 @@ namespace libCsharp.DataBase
     }
 }
 ```
+
+##### 链接MYSQL 数据库
+`之后 MYSQL和Sql Server的区别仅仅在 一个是 Sql 开头 一个是 Mysql 开头 [链接字符串 还是有区别的]`
+* `Server`:`Mysql 使用Server 表示 服务器地址`
+* `Data Source`:`Sql Server 使用 Data Source 表示 服务器地址`
+```c#
+private readonly static  String connectionString = 
+			"server=localhost;user id=root;password=Jiangxing627;database=uchat";
+
+public MySqlConnection getConnection() {
+     MySqlConnectionStringBuilder builder = new MySqlConnectionStringBuilder();
+     builder.Server = "127.0.0.1";
+     builder.UserID = "root";
+     builder.Password = "Jiangxing627";
+     builder.Database = "uchat";
+     builder.Pooling = true; //开启线程池
+     builder.MinimumPoolSize = 10;
+     builder.MinimumPoolSize = 50;
+     builder.CharacterSet = "utf8mb4"; //字符集
+     MySqlConnection connection = new MySqlConnection(builder.ConnectionString);
+     // MySqlConnection connection = new MySqlConnection(connectionString);
+     connection.StateChange += (sender, e) =>
+     {
+          Console.WriteLine(e.CurrentState);
+     };
+     connection.Open();
+     return connection;
+}
+```
+
+
 ##### [`3.执行命令`](#top) :triangular_flag_on_post:  <b id="command"></b>
 `接下来我们如何执行 SQL 命令呢？`
 > `包含在 .NET Framework 中的每个 .NET Framework 数据提供程序都拥有自己的继承自 DbCommand 的命令对象。 适用于 OLE DB 的 .NET Framework 数据提供程序包括一个 OleDbCommand 对象，适用于 SQL Server 的 .NET Framework 数据提供程序包括一个 SqlCommand 对象，适用于 ODBC 的 .NET Framework 数据提供程序包括一个 OdbcCommand 对象，适用于 Oracle 的 .NET Framework 数据提供程序包括一个 OracleCommand 对象。 其中每个对象都根据命令的类型和所需的返回值公开用于执行命令的方法，如下表所述。` <br/>
