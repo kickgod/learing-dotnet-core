@@ -3,7 +3,19 @@
 ----
 `Dotnet 语法,这是一门爱好！ 日日学习！ 不敢断绝,全菜工程师`
 
-- [x] [`1 DotNet C# 基础语法移步`](https://github.com/kickgod/Rear-End/tree/master/CSharp/Basic)
+- [x] [`1 DotNet C# 基础语法移步 ❕`](https://github.com/kickgod/Rear-End/tree/master/CSharp/Basic)
+
+- [x] [`2.ADO. NET 数据访问技术基础 ❕`](./Netcore2.0_ADONET_1.md)
+
+- [x] [`3.ADO. NET 数据访问技术进阶 ❕`](./Netcore2.0_ADONET_2.md)
+
+- [x] [`4.Net Core 多线程概念 ❕`](./Netcore2.1_Thread_1.md)
+
+- [x] [`5.Net Core 多线程之异步编程 ❕`](./Netcore2.1_Async_1.md)
+
+- [x] [`6.Net Core 多线程之任务与并行编程 ❕`](./Netcore2.1_Parallel_1.md)
+
+- [x] [`7.Net Core 多线程之同步编程 ❕`](./Netcore2.1_Synchronize_1.md)
 
 
 ----
