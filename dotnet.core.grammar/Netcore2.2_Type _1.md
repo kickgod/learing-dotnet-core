@@ -1,12 +1,13 @@
 ### [.Net Core 反射](#top) :grey_exclamation: <b id="top"></b>
-`反射是非常重要的一门学问！ 通过这个你可以得到一个类的信息,包括方法,字段,属性,构造函数,特性,它在框架中经常用到!`:white_check_mark:
+`反射是非常重要的一门学问！ 通过这个你可以得到一个类的信息,包括方法,字段,属性,构造函数,特性,它在框架中经常用到! 反射是一个庞大的体系,只能按照需求,慢慢的去了解整个架构,先简单介绍两个类,很明显查资料更加关键`:white_check_mark:
 
 ------
 
 - [x] [`1.System.Type 类`](#target1)
 - [x] [`2.System.Type 属性`](#target2)
 - [x] [`3.System.Type 方法`](#target3)
-- [ ] [`4.title3`](#target3)
+- [x] [`4.Assembley 类`](#target4)
+- [x] [`4.Assembley 属性`](#target5)
 
 ------
 
@@ -71,14 +72,93 @@ static void Main(string[] args)
 [`官方链接:Type类的方法`](https://docs.microsoft.com/zh-cn/dotnet/api/system.type?view=netframework-4.7.2#%E6%96%B9%E6%B3%95)
 `Type 有好几十个方法,需要请在官方API查询`
 * `GetConstructors()`:`返回为当前 Type 定义的所有公共构造函数。`
+* `GetConstructor(Type[])`:`搜索其参数与指定数组中的类型匹配的公共实例构造函数。`
 * `GetMethods()`:`返回为当前 Type 的所有公共方法。`
 * `GetMethod(String)`:`获得指定名称的方法`
 * `GetEvents()`:`返回由当前 Type 声明或继承的所有公共事件。`
-* ``:``
-* ``:``
-* ``:``
+* `GetField(String)`:`搜索具有指定名称的公共字段。`
+* `GetFields()`:`返回当前 Type 的所有公共字段。`
+* `GetProperty(String)`:`搜索具有指定名称的公共属性。`
+* `GetCustomAttributes(Boolean)`:`在派生类中重写时，返回应用于此成员的所有自定义属性的数组。`
+* `GetCustomAttributes(Type, Boolean)`:` 	在派生类中重写时，返回应用于此成员并由 Type 标识的自定义属性的数组。`
+* `GetMember(String)`:`搜索具有指定名称的公共成员。`
+* `GetMembers()`:` 返回为当前 Type 的所有公共成员`
+
+|`返回对象的类型`|`方法`|
+|:----|:------|
+|`ConstructorInfo`|`GetConstructors,GetConstructor`|
+|`EventInfo`|`GetEvent,GetEvents`|
+|`FieldInfo`|`GetFiled,GetFileds`|
+|`MemberInfo`|`GetMembers,GetMember`|
+|`PropertyInfo`|`GetProperty,GetPropertys`|
 
 
+
+#####  :octocat: [4.Assembley 类](#top) <b id="target4"></b>
+`它允许访问给定程序集的元数据,它也包含可以加载和执行程序集的方法,包含非常多的属性和方法,不是说假的,是真的很多属性和方法` [`官方链接:API 信息`](https://docs.microsoft.com/zh-cn/dotnet/api/system.reflection.assembly?view=netframework-4.7.2)
+
+##### 构造一个 Assembley
+* `通过 load 方法` [`官方API`](https://docs.microsoft.com/zh-cn/dotnet/api/system.appdomain.load?view=netframework-4.7.2)
+```c#
+Load(Byte[]) 	
+加载带有基于通用对象文件格式 (COFF) 的图像的 Assembly，该图像包含已发出的 Assembly。
+
+Load(AssemblyName) 	
+在给定 AssemblyName 的情况下加载 Assembly。
+
+Load(String) 	
+在给定其显示名称的情况下加载 Assembly。
+
+Load(Byte[], Byte[]) 	
+加载带有基于通用对象文件格式 (COFF) 的图像的 Assembly，该图像包含已发出的 Assembly。
+还加载表示 Assembly 的符号的原始字节。
+
+Load(AssemblyName, Evidence) 	
+在给定 AssemblyName 的情况下加载 Assembly。
+
+Load(String, Evidence) 	
+在给定其显示名称的情况下加载 Assembly。
+
+Load(Byte[], Byte[], Evidence) 	
+加载带有基于通用对象文件格式 (COFF) 的图像的 Assembly，该图像包含已发出的 Assembly。 
+还加载表示 Assembly 的符号的原始字节。
+```
+* `LoadFrom(String)`
+```c#
+Assembly SampleAssembly;
+SampleAssembly = Assembly.LoadFrom("c:\\Sample.Assembly.dll");
+
+MethodInfo Method = SampleAssembly.GetTypes()[0].GetMethod("Method1");
+
+ParameterInfo[] Params = Method.GetParameters();
+// Display information about method parameters.
+// Param = sParam1
+//   Type = System.String
+//   Position = 0
+//   Optional=False
+foreach (ParameterInfo Param in Params)
+{
+    Console.WriteLine("Param=" + Param.Name.ToString());
+    Console.WriteLine("  Type=" + Param.ParameterType.ToString());
+    Console.WriteLine("  Position=" + Param.Position.ToString());
+    Console.WriteLine("  Optional=" + Param.IsOptional.ToString());
+}
+```
+#####  :octocat: [5.Assembley 属性](#top) <b id="target5"></b>
+[`官方API`](https://docs.microsoft.com/zh-cn/dotnet/api/system.reflection.assembly?view=netframework-4.7.2#%E5%B1%9E%E6%80%A7)
+* `FullName`:`获取程序集的显示名称。`
+* `Modules`:`获取包含此程序集中模块的集合。`
+* `ReflectionOnly`:`获取 Boolean 值，该值指示此程序集是否被加载到只反射上下文中`
+* `EntryPoint`:`获取此程序集的入口点`
+
+#####  :octocat: [6.Assembley 方法](#top) <b id="target6"></b>
+[`官方API`](https://docs.microsoft.com/zh-cn/dotnet/api/system.reflection.assembly?view=netframework-4.7.2#%E6%96%B9%E6%B3%95)
+* `CreateInstance(String)`:`使用区分大小写的搜索，从此程序集中查找指定的类型，然后使用系统激活器创建它的实例。`
+* `CreateInstance(String, Boolean)`:`使用可选的区分大小写搜索，从此程序集中查找指定的类型，然后使用系统激活器创建它的实例。`
+* `GetCustomAttributes(Boolean)`:`获取此程序集的所有自定义属性`
+* `GetCustomAttributes(Type, Boolean)`:`获取按类型指定的此程序集的自定义属性`
+* `GetType(String)`:`获取程序集实例中具有指定名称的 Type 对象`
+* `GetName() `:`	获取此程序集的 AssemblyName。`
 
 
 --------------------
