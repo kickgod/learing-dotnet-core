@@ -19,4 +19,8 @@
 
 
 ----
+
+[`设置 .NET 中类型的格式`](https://docs.microsoft.com/zh-cn/dotnet/standard/base-types/formatting-types?view=netframework-4.7.2)
+
+----
 [`Net 官网`](https://dotnet.microsoft.com/) [`.Net Core API `](https://docs.microsoft.com/zh-cn/dotnet/api/)
