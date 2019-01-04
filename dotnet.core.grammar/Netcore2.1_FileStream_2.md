@@ -107,8 +107,72 @@ public void UseDmo() {
 * `UTF-32`:`32位 四个字节表示一个字符`
 * `UTF-8`:`采取可编程的字符定义,一个字符定义使用为1~6 个字符 字符串序列为 ：0xEF 0xBB 0xBF`
 
+`返回流的编码格式`
+```c#
+public System.Text.Encoding GetEncoding(Stream stream) {
+    if (!stream.CanSeek) {
+        throw new ArgumentException("错误:流不能随机读取");
+    }
+    Encoding encoding = Encoding.ASCII;
 
+    byte[] bom = new byte[5];
+    int nRead = stream.Read(bom, 0, 5);//从0 开始读取五个字节
 
+    if (bom[0] == 0xff && bom[1] == 0xfe && bom[2] == 0 && bom[3] == 0)
+    {
+        stream.Seek(4, SeekOrigin.Begin);
+        return Encoding.UTF32;
+    }
+    else if (bom[0] == 0xff && bom[1] == 0xfe)
+    {
+        stream.Seek(2, SeekOrigin.Begin);
+        return Encoding.Unicode;
+    }
+    else if (bom[0] == 0xfe && bom[1] == 0xff)
+    {
+        stream.Seek(2, SeekOrigin.Begin);
+        return Encoding.BigEndianUnicode;
+    }
+    else if (bom[0] == 0xef && bom[1] == 0xbb && bom[2] == 0xbf) {
+        stream.Seek(3, SeekOrigin.Begin);
+        return Encoding.UTF8;
+    }
+    stream.Seek(0, SeekOrigin.Begin);
+    return encoding;
+}
+
+```
+
+##### 读取流
+`打开文件创建流之后,使用Read方法读取文件,重复此过程直到读取到0为止` `注意`: `1.要记得Dispose方法关闭流,或者 using自动关闭`
+
+```c#
+public void UseDmo() {
+    using (var stream = new FileStream(Path.GetFullPath(@"Resources/TextFile/User.txt"), FileMode.Open,
+    FileAccess.ReadWrite, FileShare.None)) {
+        Byte[] buffer = new byte[256];
+
+        Encoding encoder = GetEncoding(stream); //什么编码格式
+
+        Console.WriteLine(encoder.BodyName);
+
+        while (true) {
+            int readByteCount = stream.Read(buffer, 0, buffer.Length);
+            if (readByteCount == 0)
+            {
+                break;
+            } else if (readByteCount < buffer.Length)
+            {
+                Array.Clear(buffer, readByteCount, buffer.Length - readByteCount);
+            }
+
+            String result = encoder.GetString(buffer, 0, readByteCount);
+
+            Console.WriteLine($"Read Count:{readByteCount} ---Text:{result}");
+        }
+    }
+}
+```
 
 
 --------------------
