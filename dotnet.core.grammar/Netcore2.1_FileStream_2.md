@@ -5,7 +5,7 @@
 ------
 
 - [x] [`1.使用文件流`](#target1)
-
+- [x] [`2.FileStream`](#filestream)
 
 ------
 
@@ -65,9 +65,47 @@ public void UseDmo() {
 ```
 
 
+#####  :octocat: [2.FileStream](#top) <b id="filestream"></b> 
+`非常常用的文件操作流`
+##### FileStream 流属性
+* `CanRead`:`获取一个值，该值指示当前流是否支持读取。`
+* `CanSeek`:`获取一个值，该值指示当前流是否支持查找。`
+* `CanTimeout`:`获取一个值，该值确定当前流是否可以超时。`
+* `CanWrite`:`获取一个值，该值指示当前流是否支持写入。`
+* `Handle`:`获取当前 FileStream 对象所封装文件的操作系统文件句柄。`
+* `IsAsync`:`获取一个值，它指示 FileStream 是异步打开还是同步打开的。`
+* `Length`:`获取用字节表示的流长度。`
+* `Name`:`获取 FileStream 中已打开的文件的绝对路径。`
+* `Position`:`获取或设置此流的当前位置。`
+* `ReadTimeout`:`获取或设置一个值（以毫秒为单位），该值确定流在超时前尝试读取多长时间。`
+* `SafeFileHandle`:`获取 SafeFileHandle 对象，它代表当前 FileStream 对象所封装的文件的操作系统文件句柄。`
+* `WriteTimeout`:`获取或设置一个值（以毫秒为单位），该值确定流在超时前尝试写入多长时间。`
 
+```c#
+public void UseDmo() {
+    using (var stream = new FileStream(Path.GetFullPath(@"Resources/TextFile/User.txt"), FileMode.Open, 
+    FileAccess.ReadWrite, FileShare.None)) {
+        Console.WriteLine($"是否可读: {stream.CanRead}");
+        Console.WriteLine($"是否可写: {stream.CanWrite}");
+        Console.WriteLine($"是否执行随机: {stream.CanSeek}");
+        Console.WriteLine($"是否支持超时: {stream.CanTimeout}");
+        Console.WriteLine($"Stream长度: {stream.Length}");
+        Console.WriteLine($"游标位置: {stream.Position}");
+    }
+}
+```
+##### 分析文本文件的编码
+`对于文本文件,下一步就是读取流中第一个字节----序言.序言提供了文件如何编码的信息(使用的文本格式),这也称为顺序标记`
+* `读取一个流的时候,利用ReadByte可以从流中读取一个字节`
+* `使用Read方法可以填充一个字节数组.第二个参数是字节数组中的偏移量 第三个参数是可用于填充的字节数 返回读取的字节数`
+* `GetEncoding 方法创建了一个包含五个字节的数组`
 
-
+##### 编码格式
+* `ASCII`:`使用八位存储一个字节 包含小写大写字母,控制字符 每一个字符 七位`
+* `Unicode 编码`:`有小或大端顺序法存储,FF紧随FE之后,表示小端字节序,而FE后跟FF,就表示使用大端字节序`
+* `UTF-16`:`16位两个字节表示一个字符,但是数量还是不够表示所有的字符`
+* `UTF-32`:`32位 四个字节表示一个字符`
+* `UTF-8`:`采取可编程的字符定义,一个字符定义使用为1~6 个字符 字符串序列为 ：0xEF 0xBB 0xBF`
 
 
 
