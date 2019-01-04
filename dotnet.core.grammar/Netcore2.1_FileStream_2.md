@@ -66,8 +66,8 @@ public void UseDmo() {
 
 
 #####  :octocat: [2.FileStream](#top) <b id="filestream"></b> 
-`非常常用的文件操作流`
-##### FileStream 流属性
+`非常常用的文件操作流` [`官方API说明--!`](https://docs.microsoft.com/zh-cn/dotnet/api/system.io.filestream?view=netframework-4.7.2)
+##### 1.FileStream 流属性
 * `CanRead`:`获取一个值，该值指示当前流是否支持读取。`
 * `CanSeek`:`获取一个值，该值指示当前流是否支持查找。`
 * `CanTimeout`:`获取一个值，该值确定当前流是否可以超时。`
@@ -94,19 +94,23 @@ public void UseDmo() {
     }
 }
 ```
-##### 分析文本文件的编码
+##### 2.分析文本文件的编码
 `对于文本文件,下一步就是读取流中第一个字节----序言.序言提供了文件如何编码的信息(使用的文本格式),这也称为顺序标记`
 * `读取一个流的时候,利用ReadByte可以从流中读取一个字节`
 * `使用Read方法可以填充一个字节数组.第二个参数是字节数组中的偏移量 第三个参数是可用于填充的字节数 返回读取的字节数`
 * `GetEncoding 方法创建了一个包含五个字节的数组`
 
-##### 编码格式
+##### 3.编码格式
 * `ASCII`:`使用八位存储一个字节 包含小写大写字母,控制字符 每一个字符 七位`
 * `Unicode 编码`:`有小或大端顺序法存储,FF紧随FE之后,表示小端字节序,而FE后跟FF,就表示使用大端字节序`
 * `UTF-16`:`16位两个字节表示一个字符,但是数量还是不够表示所有的字符`
 * `UTF-32`:`32位 四个字节表示一个字符`
 * `UTF-8`:`采取可编程的字符定义,一个字符定义使用为1~6 个字符 字符串序列为 ：0xEF 0xBB 0xBF`
 
+`位置方法`:
+* `public override long Seek (long offset, System.IO.SeekOrigin origin);`
+    * `offset 相对于 origin 的点，从此处开始查找。`
+    * `origin 使用 SeekOrigin 类型的值，将开始位置、结束位置或当前位置指定为 offset 的参考点。`
 `返回流的编码格式`
 ```c#
 public System.Text.Encoding GetEncoding(Stream stream) {
@@ -143,9 +147,14 @@ public System.Text.Encoding GetEncoding(Stream stream) {
 
 ```
 
-##### 读取流
+##### 4.读取流
 `打开文件创建流之后,使用Read方法读取文件,重复此过程直到读取到0为止` `注意`: `1.要记得Dispose方法关闭流,或者 using自动关闭`
+* `Read(Byte[], Int32, Int32)`:	`从流中读取字节块并将该数据写入给定缓冲区中。`
+* `Read(Span<Byte>)`:`Inherited from Stream`
+* `ReadAsync(Byte[], Int32, Int32) `:`从当前流异步读取字节序列，并将流中的位置提升读取的字节数。(Inherited from Stream)`
+* `ReadAsync(Byte[], Int32, Int32, CancellationToken)`
 
+从当前流异步读取字节的序列
 ```c#
 public void UseDmo() {
     using (var stream = new FileStream(Path.GetFullPath(@"Resources/TextFile/User.txt"), FileMode.Open,
@@ -173,6 +182,62 @@ public void UseDmo() {
     }
 }
 ```
+##### 5.写入流
+* `public override void Write (byte[] array, int offset, int count);`
+    * `array :包含要写入该流的数据的缓冲区。` 
+    * `array 中的从零开始的字节偏移量，从此处开始将字节复制到该流。`
+    * `count 最多写入的字节数。`
+* `将字节的序列异步写入当前流，将该流中的当前位置提升写入的字节数，并监视取消请求。` [`API 说明`](https://docs.microsoft.com/zh-cn/dotnet/api/system.io.filestream.writeasync?view=netframework-4.7.2)
+```c#
+[System.Runtime.InteropServices.ComVisible(false)]
+public override System.Threading.Tasks.Task WriteAsync 
+(byte[] buffer,
+int offset, 
+int count, 
+System.Threading.CancellationToken cancellationToken);
+```
+* `public override void WriteByte (byte value)`:`一个字节写入文件流中的当前位置。`
+`可以借助File类打开一个写入流`
+```c#
+FileStream stream_ = File.OpenWrite(Path.GetFullPath(@"Resources/TextFile/User.txt"));
+```
+`正常打开`:`记住正常打开的流要记得关闭,并且流写入的字节要使用编码器 转换字符得到字符的编码`
+```c#
+public void WriteStream()
+{
+    //FileStream stream_ = File.OpenWrite(Path.GetFullPath(@"Resources/TextFile/User.txt"));
+
+    using (var stream = new FileStream(Path.GetFullPath(@"Resources/TextFile/User.txt"), FileMode.Append, FileAccess.Write, FileShare.None))
+    {
+        byte[] data = Encoding.UTF8.GetBytes("我是你们的爸爸啊，儿子！");
+        stream.Write(data,0,data.Length);
+    }
+}
+```
+
+##### 6.复制流
+* `CopyTo(Stream) `:`从当前流中读取字节并将其写入到另一流中。(Inherited from Stream) `
+* `CopyTo(Stream, Int32)`:`使用指定的缓冲区大小，从当前流中读取字节并将其写入到另一流中。(Inherited from Stream) `
+* `CopyToAsync(Stream)`:`从当前流中异步读取字节并将其写入到另一个流中。(Inherited from Stream) `
+* `CopyToAsync(Stream, Int32, CancellationToken)`:`使用指定的缓冲区大小和取消令牌，从当前流中异步读取字节并将其写入到另一个流中。(Inherited from Stream) `
+* `Flush()`:`清除此流的缓冲区，使得所有缓冲数据都写入到文件中。`
+* `Flush(Boolean)`:`清除此流的缓冲区，将所有缓冲数据都写入到文件中，并且也清除所有中间文件缓冲区。`
+* `FlushAsync()`:`异步清除此流的所有缓冲区并导致所有缓冲数据都写入基础设备中。(Inherited from Stream) `
+
+
+```c#
+public void CopyStream() {
+    using (var stream = new FileStream(Path.GetFullPath(@"Resources/TextFile/User.txt"), 
+    FileMode.Open, FileAccess.Read, FileShare.None))
+    {
+        FileStream fileStream = File.OpenWrite(@"Resources/TextFile/CopyUser.txt");
+        stream.CopyTo(fileStream);
+        fileStream.Flush();
+        Console.WriteLine("Copy成功");
+    }
+}
+```
+
 
 
 --------------------
