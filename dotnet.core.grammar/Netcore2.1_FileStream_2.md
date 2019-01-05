@@ -8,6 +8,7 @@
 - [x] [`2.FileStream`](#filestream)
 - [x] [`3.StreamReader/StreamWriter`](#stream)
      * [`StreamReader`](#reader)
+     * [`StreamWriter`](#writer)
 
 ------
 
@@ -260,7 +261,7 @@ public void CopyStream() {
 * `StreamReader(Stream, Encoding)`:`用指定的字符编码为指定的流初始化 StreamReader 类的一个新实例。`
 * `StreamReader(String)`:`为指定的文件名初始化 StreamReader 类的新实例。`
 * `StreamReader(Stream, Encoding, Boolean, Int32)`:`为指定的流初始化 StreamReader 类的新实例，带有指定的字符编码、字节顺序标记检测选项和缓冲区大小。`
-
+* `File.OpenText(path)`:`也可以构造一个StreamReader`
 ```c#
 public void StreamReader()
 {
@@ -280,6 +281,53 @@ public void StreamReader()
 ##### 属性
 * `CurrentEncoding`:`获取当前 StreamReader 对象正在使用的当前字符编码。`
 * `EndOfStream 	`:`获取一个值，该值指示当前的流位置是否在流结尾。`
+
+##### 读取方法
+* `Read()`:`读取输入流中的下一个字符并使该字符位置提升一个字符。`
+* `Read(Char[], Int32, Int32)`:`从指定的索引位置开始将来自当前流的指定的最多字符读到缓冲区。`
+* `ReadAsync(Char[], Int32, Int32)`:`从当前流中异步读取指定的最大字符，并且从指定的索引位置开始将该数据写入缓冲区。`
+* `ReadLine()`:`从当前流中读取一行字符并将数据作为字符串返回。`
+* `ReadLineAsync()`:`从当前流中异步读取一行字符并将数据作为字符串返回。`
+* `ReadToEnd()`:`读取来自流的当前位置到结尾的所有字符。`
+* `ReadToEndAsync()`:`异步读取来自流的当前位置到结尾的所有字符并将它们作为一个字符串返回。`
+* `DiscardBufferedData()`:`清除内部缓冲区。`
+* `Peek()`:	`返回下一个可用字符，但不使用它。`
+
+```c#
+using (StreamReader sr = new StreamReader(path)) 
+{
+
+    while (sr.Peek() > -1) 
+    {
+        Console.WriteLine(sr.ReadLine());
+    }
+}
+```
+
+#####  :octocat: [3.2 StreamWriter](#top) <b id="writer"></b> 
+`它和StreamWriter 和 StreamReader的区别在  StreamWriter只能用于写文件,`
+
+##### 构造函数
+* `StreamWriter(Stream)`:`使用 UTF-8 编码及默认的缓冲区大小，为指定的流初始化 StreamWriter 类的新实例。`
+* `StreamWriter(Stream, Encoding)`:`使用指定的编码及默认的缓冲区大小，为指定的流初始化 StreamWriter 类的新实例。`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 --------------------
 `作者:` `模板` 
