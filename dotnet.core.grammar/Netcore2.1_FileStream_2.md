@@ -6,6 +6,8 @@
 
 - [x] [`1.使用文件流`](#target1)
 - [x] [`2.FileStream`](#filestream)
+- [x] [`3.StreamReader/StreamWriter`](#stream)
+     * [`StreamReader`](#reader)
 
 ------
 
@@ -107,10 +109,7 @@ public void UseDmo() {
 * `UTF-32`:`32位 四个字节表示一个字符`
 * `UTF-8`:`采取可编程的字符定义,一个字符定义使用为1~6 个字符 字符串序列为 ：0xEF 0xBB 0xBF`
 
-`位置方法`:
-* `public override long Seek (long offset, System.IO.SeekOrigin origin);`
-    * `offset 相对于 origin 的点，从此处开始查找。`
-    * `origin 使用 SeekOrigin 类型的值，将开始位置、结束位置或当前位置指定为 offset 的参考点。`
+
 `返回流的编码格式`
 ```c#
 public System.Text.Encoding GetEncoding(Stream stream) {
@@ -207,7 +206,8 @@ public void WriteStream()
 {
     //FileStream stream_ = File.OpenWrite(Path.GetFullPath(@"Resources/TextFile/User.txt"));
 
-    using (var stream = new FileStream(Path.GetFullPath(@"Resources/TextFile/User.txt"), FileMode.Append, FileAccess.Write, FileShare.None))
+    using (var stream = new FileStream(Path.GetFullPath(@"Resources/TextFile/User.txt"), 
+    FileMode.Append, FileAccess.Write, FileShare.None))
     {
         byte[] data = Encoding.UTF8.GetBytes("我是你们的爸爸啊，儿子！");
         stream.Write(data,0,data.Length);
@@ -238,7 +238,48 @@ public void CopyStream() {
 }
 ```
 
+##### 7.随机访问流
+`可以快速访问文件中的特定位置` <br/> 
+`位置方法`:`通过它可以将游标定义到流中的一个随机位置,读取不同的数据`
+* `public override long Seek (long offset, System.IO.SeekOrigin origin);`
+    * `offset 相对于 origin 的点，从此处开始查找。`
+    * `origin 使用 SeekOrigin 类型的值，将开始位置、结束位置或当前位置指定为 offset 的参考点。`
+    
+##### 8.使用缓存的流
+`使用流在读写的时候,是进过缓存的,并不是每次读写改变都放映到文件中,而是预先保留在缓存区中,因为每一次对于文件的保存改变需要,读取字节,链接文件系统,定位文件,磁盘读写过程。` `对于文件操作系统会自动完成读写操作,但是需要编写一个流类,从其他没有缓存的设备中读取数据。如果这样,就应该从BufferStream 创建一个类,它实现一个缓存区 但是它并不适用于程序频繁切换读数据和谐数据的情形`
 
+
+#####  :octocat: [3.StreamReader/StreamWriter](#top) <b id="stream"></b> 
+`使用FileStream 类读写文本文件,需要使用字节数组,处理前一节描述的编码.其实我们可以直接使用StreamReader/StreamWriter 读写FileStream，无须处理字节数组和编码，比较轻松！ `
+* `他们非常适合文本类型的工作,自定处理文本位置问题！`
+
+#####  :octocat: [3.1 StreamReader](#top) <b id="reader"></b> 
+[`官方API`](https://docs.microsoft.com/zh-cn/dotnet/api/system.io.streamreader?view=netframework-4.7.2)
+
+* `StreamReader(Stream)`:`为指定的流初始化 StreamReader 类的新实例。`
+* `StreamReader(Stream, Encoding)`:`用指定的字符编码为指定的流初始化 StreamReader 类的一个新实例。`
+* `StreamReader(String)`:`为指定的文件名初始化 StreamReader 类的新实例。`
+* `StreamReader(Stream, Encoding, Boolean, Int32)`:`为指定的流初始化 StreamReader 类的新实例，带有指定的字符编码、字节顺序标记检测选项和缓冲区大小。`
+
+```c#
+public void StreamReader()
+{
+    using (var stream = new FileStream(Path.GetFullPath(@"Resources/TextFile/User.txt"),
+    FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+    {
+        using (StreamReader reader = new StreamReader(stream)) {
+            while (!reader.EndOfStream) {
+                String line = reader.ReadLine();
+                Console.WriteLine("Start: " + line);
+            };
+        }; 
+    };
+}
+```
+
+##### 属性
+* `CurrentEncoding`:`获取当前 StreamReader 对象正在使用的当前字符编码。`
+* `EndOfStream 	`:`获取一个值，该值指示当前的流位置是否在流结尾。`
 
 --------------------
 `作者:` `模板` 
