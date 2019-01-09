@@ -180,6 +180,67 @@ using (FileStream zipToOpen = new FileStream(@"c:\users\exampleuser\release.zip"
      * `创建在 zip 存档中有指定项名和压缩级别的空项。`
 * `GetEntry(String)`
      * `在 zip 存档中检索指定项的包装。`
+     
+```c#
+public class UseCompress
+{
+     public void UseZip(string directory,string zipFile) {
+         FileStream zipStream = File.OpenWrite(zipFile);
+         using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create)) {
+             IEnumerable<String> files = 
+                       Directory.EnumerateFiles(directory, "*", SearchOption.TopDirectoryOnly);
+             foreach(var file in files)
+             {
+                 ZipArchiveEntry entry = archive.CreateEntry(Path.GetFileName(file));
+                 using (FileStream inputStream = File.OpenRead(file))
+                 {
+                     using (Stream outpueStream = entry.Open())
+                     {
+                         inputStream.CopyTo(outpueStream);
+                     };
+                 };
+             };
+         };
+     }
+}
+
+static void Main(string[] args)
+{
+  UseCompress demo = new UseCompress();
+  demo.UseZip(@"Resources/TextFile", @"Resources/Use.zip");
+  Console.ReadKey();
+}
+```
+
+```c#
+//演示如何打开 zip 存档，并循环访问的项的集合。
+static void Main(string[] args)
+{
+  string zipPath = @"c:\example\start.zip";
+
+  Console.WriteLine("Provide path where to extract the zip file:");
+  string extractPath = Console.ReadLine();
+
+  extractPath = Path.GetFullPath(extractPath);
+  if (!extractPath.EndsWith(Path.DirectorySeparatorChar))
+      extractPath += Path.DirectorySeparatorChar;
+
+  using (ZipArchive archive = ZipFile.OpenRead(zipPath))
+  {
+      foreach (ZipArchiveEntry entry in archive.Entries)
+      {
+          if (entry.FullName.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+          {
+              string destinationPath = Path.GetFullPath(Path.Combine(extractPath, entry.FullName));
+
+              if (destinationPath.StartsWith(extractPath, StringComparison.Ordinal))
+                  entry.ExtractToFile(destinationPath);                        
+          }
+      }
+  }
+}
+```
+
 
 ##### 扩展方法
 * `CreateEntryFromFile(ZipArchive, String, String)` 	
@@ -188,28 +249,26 @@ using (FileStream zipToOpen = new FileStream(@"c:\users\exampleuser\release.zip"
      * `通过使用指定压缩级别压缩并将其添加到邮编存档的存档文件。`
 * `ExtractToDirectory(ZipArchive, String)`
      * `将 zip 存档中的所有文件都解压缩到文件系统的一个目录下。`
-     
+ 
 ```c#
-public void UseZip(string directory,string zipFile) {
-    FileStream zipStream = File.OpenWrite(zipFile);
-    using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create)) {
-        IEnumerable<String> files = 
-                            Directory.EnumerateFiles(directory, "*", SearchOption.TopDirectoryOnly);
+//演示如何使用扩展方法从现有的文件的 zip 存档中创建新的条目和提取存档内容
+static void Main(string[] args)
+{
+  string zipPath = @"c:\users\exampleuser\start.zip";
+  string extractPath = @"c:\users\exampleuser\extract";
+  string newFile = @"c:\users\exampleuser\NewFile.txt";
 
-        foreach(var file in files)
-        {
-            ZipArchiveEntry entry = archive.CreateEntry(Path.GetFileName(file));
-            using (FileStream inputStream = File.OpenRead(file))
-            {
-                using (Stream outpueStream = entry.Open())
-                {
-                    inputStream.CopyTo(outpueStream);
-                };
-            };
-        };
-    };
+  using (ZipArchive archive = ZipFile.Open(zipPath, ZipArchiveMode.Update))
+  {
+      archive.CreateEntryFromFile(newFile, "NewEntry.txt");
+      archive.ExtractToDirectory(extractPath);
+  } 
 }
 ```
+
+
+
+
 ##### [官方API：ZipFile](https://docs.microsoft.com/zh-cn/dotnet/api/system.io.compression.zipfile?view=netframework-4.7.2) <b id="zf"></b>
 `提供创建、解压缩和打开 zip 存档的静态方法。`
 
