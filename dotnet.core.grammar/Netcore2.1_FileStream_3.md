@@ -8,7 +8,10 @@
      - [`CompressionMode`](#mode)
      - [`DeflateStream`](#deflate)
 - [x] [`2.ZIP文件压缩`](#zip)
-
+     - [`ZipArchiveEntry`](#entry)
+     - [`ZipArchive`](#arch)
+     - [`ZipFile`](#zf)
+  
 
 ------
 
@@ -117,12 +120,12 @@ ZipArchiveEntry对象[因为有可能对文件夹压缩！],ZipArchive类不是�
 |`Update`|2|`允许对存档项执行读取和写入操作`|
 
 
-##### ZipArchiveEntry :speech_balloon:
+##### [ZipArchiveEntry](https://docs.microsoft.com/zh-cn/dotnet/api/system.io.compression.ziparchiveentry?view=netframework-4.7.2) <b id="entry"></b>
 `表示 zip 档案中的压缩文件。`
 * `Zip 存档包含每个压缩文件的一项。 ZipArchiveEntry类使你可以检查某项的属性和打开或删除的项。 当您打开一个条目时，可以通过写入到该压
 缩文件的流来修改压缩的文件。`
 
-##### 属性
+##### 属性 :speech_balloon:
 * `Archive`:`获取该项所属的 zip 存档。`
 * `CompressedLength`:`获取在 zip 存档中的项的压缩大小。`
 * `ExternalAttributes`:`操作系统和应用程序特定的文件属性。`
@@ -131,15 +134,67 @@ ZipArchiveEntry对象[因为有可能对文件夹压缩！],ZipArchive类不是�
 * `Length`:`获取 zip 存档中的项的未压缩大小。`
 * `Name`:`获取在 zip 存档中的项的文件名。`
 
-##### 方法
-*
+##### 方法 :speech_balloon:
+* `Delete()`:`删除 zip 存档中的项。`
+
+```c#
+//演示如何创建新的条目，并向其中写入使用一个流。
+using (FileStream zipToOpen = new FileStream(@"c:\users\exampleuser\release.zip", FileMode.Open))
+{
+ using (ZipArchive archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update))
+ {
+     ZipArchiveEntry readmeEntry = archive.CreateEntry("Readme.txt");
+     using (StreamWriter writer = new StreamWriter(readmeEntry.Open()))
+     {
+             writer.WriteLine("Information about this package.");
+             writer.WriteLine("========================");
+     }
+ }
+}
+```
+
+##### [官方API：ZipArchive](https://docs.microsoft.com/zh-cn/dotnet/api/system.io.compression.ziparchive?view=netframework-4.7.2)  <b id="arch"></b>
+`表示 Zip 存档格式中的一个压缩文件包。`
+##### 构造函数 :speech_balloon:
+* `ZipArchive(Stream)`
+     * `从指定的流初始化 ZipArchive 类的新实例。`
+     
+* `ZipArchive(Stream, ZipArchiveMode)`
+     * `从指定的流并使用指定的模式初始化 ZipArchive 类的新实例.`
+* `ZipArchive(Stream, ZipArchiveMode, Boolean)`
+     * `对于指定的模式，初始化指定流上的 ZipArchive 类的新实例，并选择性地使流保持打开状态。`
+* `ZipArchive(Stream, ZipArchiveMode, Boolean, Encoding)`
+     * `对于指定的模式，初始化指定流上的 ZipArchive 类的新实例，使用项名的指定编码，并选择性地使流保持打开状态。`
 
 
+##### 属性  :speech_balloon:
+* `Entries`
+     * `获取 zip 存档中当前存在的项的集合。`  
+* `Mode` 	
+     * `获取描述 zip 存档可在项上执行的操作类型的一个值。`
+
+##### 方法 :speech_balloon:
+* `CreateEntry(String)`
+     * `创建在 zip 存档中有指定路径和项名的空项。`
+* `CreateEntry(String, CompressionLevel)`
+     * `创建在 zip 存档中有指定项名和压缩级别的空项。`
+* `GetEntry(String)`
+     * `在 zip 存档中检索指定项的包装。`
+
+##### 扩展方法
+* `CreateEntryFromFile(ZipArchive, String, String)` 	
+     * `通过压缩并将其添加到邮编存档的存档文件。`
+* `CreateEntryFromFile(ZipArchive, String, String, CompressionLevel) 	`
+     * `通过使用指定压缩级别压缩并将其添加到邮编存档的存档文件。`
+* `ExtractToDirectory(ZipArchive, String)`
+     * `将 zip 存档中的所有文件都解压缩到文件系统的一个目录下。`
+     
 ```c#
 public void UseZip(string directory,string zipFile) {
     FileStream zipStream = File.OpenWrite(zipFile);
     using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create)) {
-        IEnumerable<String> files = Directory.EnumerateFiles(directory, "*", SearchOption.TopDirectoryOnly);
+        IEnumerable<String> files = 
+                            Directory.EnumerateFiles(directory, "*", SearchOption.TopDirectoryOnly);
 
         foreach(var file in files)
         {
@@ -155,6 +210,71 @@ public void UseZip(string directory,string zipFile) {
     };
 }
 ```
+##### [官方API：ZipFile](https://docs.microsoft.com/zh-cn/dotnet/api/system.io.compression.zipfile?view=netframework-4.7.2) <b id="zf"></b>
+`提供创建、解压缩和打开 zip 存档的静态方法。`
+
+```c#
+若要使用 ZipFile 类，必须在项目中引用 System.IO.Compression.FileSystem 程序集。
+```
+
+* `CreateFromDirectory(String, String)` 	
+     * `创建 zip 存档，该存档包含指定目录的文件和目录。`
+* `CreateFromDirectory(String, String, CompressionLevel, Boolean)`
+     * `创建 zip 存档，该存档包括指定目录的文件和目录，使用指定压缩级别，以及可以选择包含基目录。`
+* `CreateFromDirectory(String, String, CompressionLevel, Boolean, Encoding)`
+     * `创建 zip 存档，该存档包括文件和指定目录的目录，使用指定压缩级别和条目名称的字符编码，以及可以选择包含基目录。`
+* `ExtractToDirectory(String, String)`
+     * `将指定 zip 存档中的所有文件都解压缩到文件系统的一个目录下。`
+* `ExtractToDirectory(String, String, Encoding)`
+
+     * `将指定 zip 存档中的所有文件解压缩到文件系统的一目录下，并使用项名称的指定字符编码。`
+* `Open(String, ZipArchiveMode)`
+     * `以指定的模式打开指定路径上的 zip 存档。`
+* `Open(String, ZipArchiveMode, Encoding)`
+     * `在指定模式下，在指定路径中，使用项名称的指定字符编码打开 zip 存档。`
+* `OpenRead(String)` 	
+     * `打开在指定路径用于读取的 zip 存档。`
+
+```c#
+using System;
+using System.IO;
+using System.IO.Compression;
+
+namespace ConsoleApplication
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            string startPath = @"c:\example\start";
+            string zipPath = @"c:\example\result.zip";
+            string extractPath = @"c:\example\extract";
+
+            ZipFile.CreateFromDirectory(startPath, zipPath);
+
+            ZipFile.ExtractToDirectory(zipPath, extractPath);
+        }
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 --------------------
