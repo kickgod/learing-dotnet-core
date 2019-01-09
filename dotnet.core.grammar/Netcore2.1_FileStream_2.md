@@ -6,10 +6,12 @@
 
 - [x] [`1.使用文件流`](#target1)
 - [x] [`2.FileStream`](#filestream)
-- [x] [`3.StreamReader/StreamWriter`](#stream)
+- [x] [`3.文本读写 StreamReader/StreamWriter`](#stream)
      * [`StreamReader`](#reader)
      * [`StreamWriter`](#writer)
-
+- [x] [`4.二进制读写 BinaryReader/BinaryWriter`](#binary)
+     * [`BinaryReader`](#breader)
+     * [`BinaryWriter`](#bwriter)
 ------
 
 #####  :octocat: [1.使用文件流](#top) <b id="target1"></b> 
@@ -31,6 +33,7 @@
 |`Truncate`|5 |`指定操作系统应打开现有文件。 该文件被打开时，将被截断为零字节大小。 这需要 Write 权限。 尝试从使用 FileMode.Truncate 打开的文件中进行读取将导致 ArgumentException 异常。`|
 |`Append`|6 |`若存在文件，则打开该文件并查找到文件尾，或者创建一个新文件。 这需要 Append 权限。 FileMode.Append 只能与 FileAccess.Write 一起使用。 试图查找文件尾之前的位置时会引发 IOException 异常，并且任何试图读取的操作都会失败并引发 NotSupportedException 异常。`|
 
+* `1. FileMode.Append 只能够在 FileAccess.Write 模式下面使用 `
 ##### 2.FileShare
 |`打开方式` |`描述`|
 |:------|:----|
@@ -305,31 +308,166 @@ using (StreamReader sr = new StreamReader(path))
 ```
 
 #####  :octocat: [3.2 StreamWriter](#top) <b id="writer"></b> 
-`它和StreamWriter 和 StreamReader的区别在  StreamWriter只能用于写文件,`
+`它和StreamWriter 和 StreamReader的区别在  StreamWriter只能用于写文件, 实现一个 TextWriter，使其以一种特定的编码向流中写入字符。`
+```c#
+[System.Runtime.InteropServices.ComVisible(true)]
+[System.Serializable]
+public class StreamWriter : System.IO.TextWriter
+```
+`正常情况下！ 你对于一个文件的写 是追加在一个文件的开头！ `
+##### 构造函数: 后面的带中括号可以从右到左省略
+* `StreamWriter(Stream)`:`使用 UTF-8 编码及默认的缓冲区大小，为指定的流初始化 StreamWriter 类的新实例。`
+* `StreamWriter(Stream [, Encoding] [, Int32] [, Boolean])`:`使用指定的编码和缓冲区大小，为指定的流初始化 StreamWriter 类的新实例，并可以选择保持流处于打开状态。`
+* `StreamWriter(String)`:`用默认编码和缓冲区大小，为指定的文件初始化 StreamWriter 类的一个新实例。`
+* `StreamWriter(String[, Boolean][, Encoding] [, Int32])`:`使用指定编码和缓冲区大小，为指定路径上的指定文件初始化 StreamWriter 类的新实例。 如果该文件存在，则可以将其覆盖或向其追加。 如果该文件不存在，此构造函数将创建一个新文件。`
+
+##### 字段
+* `CoreNewLine `:`存储用于此 TextWriter 的换行符。`
+* `Null`:`提供 StreamWriter，它不带任何可写入但无法从中读取的后备存储。`
+
+##### 属性
+* `AutoFlush`:`获取或设置一个值，该值指示 StreamWriter 在每次调用 Write(Char) 之后是否都将其缓冲区刷新到基础流。`
+* `BaseStream`:`获取同后备存储连接的基础流。`
+* `Encoding`:`获取在其中写入输出的 Encoding。`
+* `FormatProvider`:`获取控制格式设置的对象。(Inherited from TextWriter)`
+* `NewLine `:`获取或设置由当前 TextWriter 使用的行结束符字符串。(Inherited from TextWriter) `
+
+##### 方法
+* `Flush()`:`清理当前写入器的所有缓冲区，并使所有缓冲数据写入基础流。`
+* `FlushAsync()`:`异步清除此流的所有缓冲区并导致所有缓冲数据都写入基础设备中。`
+* `Write(T Type)`:`T为 C#自带的基本类型 String Single Float Double Int32.....`
+* `WriteAsync(T Type)`:`将字符异步写入该流。`
+* `WriteLine(T Type)`:`T为 C#自带的基本类型 String Single Float Double Int32.....`
+* `WriteLine(String, Object)`
+* `WriteLine()`:`将行终止符异步写入该流。`
+* `WriteLineAsync()`:`将行终止符异步写入该流。`
+* `WriteAsync(Char[])`:`以异步形式将字符数组写入到下一个字符串或流。(Inherited from TextWriter) `
+* `WriteAsync(Char[], Int32, Int32)`:`将字符的子数组异步写入该流。`
+    * `包含要写入的数据的字符数组。`
+    * `在开始读取数据时缓冲区中的字符位置。`
+    * `要写入的最大字符数。`
+    * `返回 Task 表示异步写入操作的任务。`
+* `WriteLine(Char[], Int32, Int32)`:`将后跟行结束符的字符子数组写入文本字符串或流。(Inherited from TextWriter) `
+
+##### 行结尾
+* `windows`:`CR LF`
+* `macintosh`:`CR`
+* `Unix`:`LF`
+* `Unicode 行分隔符号`:`LS`
+* `Unicode 段落分隔符`:`PS`
+
+```c#
+using (var stream = new FileStream(Path.GetFullPath(@"Resources/TextFile/User.txt"), FileMode.Append, 
+FileAccess.Write, FileShare.None)) {
+    using (var writer = new StreamWriter(stream)) {
+        //编码格式
+        Console.WriteLine(writer.Encoding.BodyName);
+        writer.WriteLineAsync("与其让你在我爱中憔悴,宁愿你受伤流泪！").Wait();
+        writer.Write("I am a boy! Do you know.");
+    }
+}
+
+DirectoryInfo[] cDirs = new DirectoryInfo(@"c:\").GetDirectories();
+
+// Write each directory name to a file.
+using (StreamWriter sw = new StreamWriter("CDriveDirs.txt"))
+{
+    foreach (DirectoryInfo dir in cDirs)
+    {
+        sw.WriteLine(dir.Name);
+    }
+}
+}
+```
+
+#####  :octocat: [4. 二进制读写 BinaryReader/BinaryWriter](#top) <b id="binary"></b> 
+`读写二进制文件的一种选择是直接使用流类型,使用字节数组执行读写操作,但是另一个更好的选择是使用为二进制文件专门量身定制的读取器和写入器。使用方式和
+StreamReader/StreamWriter 一样,区别在于二进制文件是不需要使用编码的,文件使用的是二进制格式而不是文件格式`
+
+##### [4.1 BinaryReader](#top) <b id="breader"></b> 
+`读取二进制文件`
 
 ##### 构造函数
-* `StreamWriter(Stream)`:`使用 UTF-8 编码及默认的缓冲区大小，为指定的流初始化 StreamWriter 类的新实例。`
-* `StreamWriter(Stream, Encoding)`:`使用指定的编码及默认的缓冲区大小，为指定的流初始化 StreamWriter 类的新实例。`
+* `BinaryReader(Stream)`:`基于所指定的流和特定的 UTF-8 编码，初始化 BinaryReader 类的新实例。`
+* `BinaryReader(Stream, Encoding)`:`基于所指定的流和特定的字符编码，初始化 BinaryReader 类的新实例。`
+* `BinaryReader(Stream, Encoding, Boolean)`:`基于所提供的流和特定的字符编码，初始化 BinaryReader 类的新实例，有选择性的打开流。`
 
+##### 属性
+* `BaseStream`:`公开对 BinaryReader 的基础流的访问。`
 
+##### 方法
+* `Read(Byte[], Int32, Int32)`:`从字节数组中的指定点开始，从流中读取指定的字节数。`
+* `Read(Char[], Int32, Int32)`:`从字符数组中的指定点开始，从流中读取指定的字符数。`
+* `Readxxx()`:`18种 读取各种数据类型的方法`
+* `FillBuffer(Int32)`:`用从流中读取的指定字节数填充内部缓冲区。`
+* `PeekChar()`:`返回下一个可用的字符，并且不提升字节或字符的位置。`
+* `MemberwiseClone()`:`创建当前 Object 的浅表副本。(Inherited from Object) `
 
+```c#
+const string fileName = "AppSettings.dat";
 
+static void Main()
+{
+    WriteDefaultValues();
+    DisplayValues();
+}
 
+public static void WriteDefaultValues()
+{
+    using (BinaryWriter writer = new BinaryWriter(File.Open(fileName, FileMode.Create)))
+    {
+        writer.Write(1.250F);
+        writer.Write(@"c:\Temp");
+        writer.Write(10);
+        writer.Write(true);
+    }
+}
 
+public static void DisplayValues()
+{
+    float aspectRatio;
+    string tempDirectory;
+    int autoSaveTime;
+    bool showStatusBar;
 
+    if (File.Exists(fileName))
+    {
+        using (BinaryReader reader = new BinaryReader(File.Open(fileName, FileMode.Open)))
+        {
+            aspectRatio = reader.ReadSingle();
+            tempDirectory = reader.ReadString();
+            autoSaveTime = reader.ReadInt32();
+            showStatusBar = reader.ReadBoolean();
+        }
 
+        Console.WriteLine("Aspect ratio set to: " + aspectRatio);
+        Console.WriteLine("Temp directory is: " + tempDirectory);
+        Console.WriteLine("Auto save time set to: " + autoSaveTime);
+        Console.WriteLine("Show status bar: " + showStatusBar);
+    }
+}
+```
 
+##### [4.2 BinaryWriter](#top) <b id="bwriter"></b> 
+`将二进制中的基元类型写入流并支持用特定的编码写入字符串。`
 
+##### 构造函数
+* `BinaryWriter()`:`初始化写入流的 BinaryWriter 类的新实例。`
+* `BinaryWriter(Stream)`:`基于所指定的流和特定的 UTF-8 编码，初始化 BinaryWriter 类的新实例。`
+* `BinaryWriter(Stream, Encoding)`:`基于所指定的流和特定的字符编码，初始化 BinaryWriter 类的新实例。`
+* `BinaryWriter(Stream, Encoding, Boolean)`:`基于所提供的流和特定的字符编码，初始化 BinaryWriter 类的新实例，有选择性的打开流。`
 
+##### 字段
+* `Null`:`指定无后备存储的 BinaryWriter。`
+* `OutStream`:`包含基础流。`
 
-
-
-
-
-
-
+##### 方法
+* `Seek(Int32, SeekOrigin) `:`设置当前流中的位置。`
+* `Flush()`:`清理当前编写器的所有缓冲区，使所有缓冲数据写入基础设备。`
+* `Write(Char[], Int32, Int32)`:`将字符数组部分写入当前流，并根据所使用的 Encoding（可能还根据向流中写入的特定字符），提升流的当前位置。`
+* `Write(T type)`:`让T 类型的元素写入`
 
 --------------------
-`作者:` `模板` 
-`完成时间`:`2018年12月31日18:33:38`
-`备注信息`: `禁止转载` 
+`作者:` `KickGod` 
+`完成时间`:`2019年1月9日13:20:36`
+`备注信息`: `任意使用` 
