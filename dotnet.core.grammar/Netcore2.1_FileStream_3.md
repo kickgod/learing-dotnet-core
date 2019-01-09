@@ -11,7 +11,7 @@
      - [`ZipArchiveEntry`](#entry)
      - [`ZipArchive`](#arch)
      - [`ZipFile`](#zf)
-  
+- [x] [`3.观察文件的更改`](#fcg)
 
 ------
 
@@ -152,6 +152,7 @@ using (FileStream zipToOpen = new FileStream(@"c:\users\exampleuser\release.zip"
  }
 }
 ```
+[`扩展方法`](https://docs.microsoft.com/zh-cn/dotnet/api/system.io.compression.zipfileextensions?view=netframework-4.7.2)
 
 ##### [官方API：ZipArchive](https://docs.microsoft.com/zh-cn/dotnet/api/system.io.compression.ziparchive?view=netframework-4.7.2)  <b id="arch"></b>
 `表示 Zip 存档格式中的一个压缩文件包。`
@@ -242,14 +243,16 @@ static void Main(string[] args)
 ```
 
 
-##### 扩展方法
+##### 扩展方法 :speech_balloon:
 * `CreateEntryFromFile(ZipArchive, String, String)` 	
      * `通过压缩并将其添加到邮编存档的存档文件。`
 * `CreateEntryFromFile(ZipArchive, String, String, CompressionLevel) 	`
      * `通过使用指定压缩级别压缩并将其添加到邮编存档的存档文件。`
 * `ExtractToDirectory(ZipArchive, String)`
      * `将 zip 存档中的所有文件都解压缩到文件系统的一个目录下。`
- 
+     
+* [`扩展方法`](https://docs.microsoft.com/zh-cn/dotnet/api/system.io.compression.zipfileextensions?view=netframework-4.7.2)
+
 ```c#
 //演示如何使用扩展方法从现有的文件的 zip 存档中创建新的条目和提取存档内容
 static void Main(string[] args)
@@ -318,15 +321,99 @@ namespace ConsoleApplication
 ```
 
 
+#####  :octocat: [3.观察文件的更改](#top) <b id="fcg"></b> 
+`使用 System.IO.FileSystemWatcher可以监视文件的更改,事件在创建,重命名,删除更改时触发,可以用于如下场景`
+* :one: `需要对文件的变更做出更改`--`服务器文件上传,或文件缓存在内存中,而缓存需要在文件更改时失效`
+* :two: `使用FileSystemWatcher要监视的指定目录中的更改。 可监视文件和指定的目录的子目录中的更改`
+* :three: ` 可以创建一个组件来监视本地计算机、 网络驱动器或远程计算机上的文件。`
+
+> `若要监视的所有文件中的更改，请设置Filter属性为空字符串 ("") 或使用通配符 ("*。*")。 若要监视特定文件，请设置Filter属性设置为的文件的名称。 例如，若要监视的文件 MyDoc.txt 中的更改，请设置Filter属性设置为"MyDoc.txt"。 此外可以监视特定类型的文件中的更改。 例如，若要监视的文本文件中的更改，请设置Filter属性设置为"*.txt"。`
+
+##### 构造函数 :speech_balloon:
+* `FileSystemWatcher()`
+
+     * `初始化 FileSystemWatcher 类的新实例。`
+* `FileSystemWatcher(String)`
+     * `在给定要监视的指定目录的情况下，初始化 FileSystemWatcher 类的新实例。`
+* `FileSystemWatcher(String, String)`
+     * `在给定要监视的指定目录和文件类型的情况下，初始化 FileSystemWatcher 类的新实例。`
 
 
 
+|`筛选器字符串` |`监视以下文件`|
+|:-----|:-----|
+| `*.*`|`所有文件 （默认值）。 空字符串 ("") 还会监视所有文件。`|
+| `*.txt `|`使用"txt"扩展的所有文件。`|
+| `*recipe.doc`|`"Recipe"扩展名"doc"结尾的所有文件。`|
+|`win*.xml 	`|`"Xml"扩展与"win"开头的所有文件。`|
+|`Sales * 200？.xls`|`匹配以下项：销售年 7 月 2001.xlsSales 年 8 月 2002.xlsSales 年 3 月 2004.xls 但不匹配：销售年 11 月 1999.xls`|
+|`MyReport.Doc`|`监视仅 MyReport.doc`|
 
 
+##### 属性 :speech_balloon:
+* `Path`:`获取或设置要监视的目录的路径。`
+* `Filter`:`获取或设置用于确定在目录中监视哪些文件的筛选器字符串。`
+* `Events`:`获取附加到此 Component 的事件处理程序的列表。(Inherited from Component) `
+
+##### 方法 :speech_balloon:
+* `OnChanged(FileSystemEventArgs)`:`引发 Changed 事件。`
+* `OnCreated(FileSystemEventArgs)`:`引发 Created 事件。`
+* `OnDeleted(FileSystemEventArgs)`:`引发 Deleted 事件。`
+* `OnError(ErrorEventArgs)`:`引发 Error 事件。`
+* `OnRenamed(RenamedEventArgs)`:`引发 Renamed 事件。`
+
+##### 事件 :speech_balloon:
+* `Changed`:`当更改指定 Path 中的文件和目录时发生。`
+* `Created`:`当在指定 Path 中创建文件和目录时发生。`
+* `Deleted`:`删除指定 Path 中的文件或目录时发生。`
+* `Disposed`:`当通过调用 Dispose() 方法释放组件时发生。`
+* `Error`:`当 FileSystemWatcher 的实例无法继续监视更改或内部缓冲区溢出时发生。`
+* `Renamed`:`重命名指定 Path 中的文件或目录时发生。`
 
 
+```c#
+public static void Main()
+{
+     Run();
+}
+
+[PermissionSet(SecurityAction.Demand, Name="FullTrust")]
+public static void Run()
+{
+   string[] args = System.Environment.GetCommandLineArgs();
+
+   if(args.Length != 2)
+   {
+       Console.WriteLine("Usage: Watcher.exe (directory)");
+       return;
+   }
+
+   FileSystemWatcher watcher = new FileSystemWatcher();
+   watcher.Path = args[1];
+
+   watcher.Filter = "*.txt";
+   watcher.Changed += new FileSystemEventHandler(OnChanged);
+   watcher.Created += new FileSystemEventHandler(OnChanged);
+   watcher.Deleted += new FileSystemEventHandler(OnChanged);
+   watcher.Renamed += new RenamedEventHandler(OnRenamed);
+
+   watcher.EnableRaisingEvents = true;
+   
+   Console.WriteLine("Press \'q\' to quit the sample.");
+   while(Console.Read()!='q');
+}
 
 
+private static void OnChanged(object source, FileSystemEventArgs e)
+{
+  Console.WriteLine("File: " +  e.FullPath + " " + e.ChangeType);
+}
+
+private static void OnRenamed(object source, RenamedEventArgs e)
+{
+   Console.WriteLine("File: {0} renamed to {1}", e.OldFullPath, e.FullPath);
+}
+```
 
 
 
