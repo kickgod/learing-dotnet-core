@@ -17,7 +17,11 @@
 
 - [x] [`7.Net Core 多线程之同步编程 ❕`](./Netcore2.1_Synchronize_1.md)
 
+- [x] [`8.Net Core 流操作概述`](./Netcore2.1_FileStream_1.md)
 
+- [x] [`9.Net Core 文本二进制流操作`](./Netcore2.1_FileStream_2.md)
+
+- [x] [`10.Net Core 特殊流操作`](./Netcore2.1_FileStream_3.md)
 ----
 
 [`设置 .NET 中类型的格式`](https://docs.microsoft.com/zh-cn/dotnet/standard/base-types/formatting-types?view=netframework-4.7.2)
