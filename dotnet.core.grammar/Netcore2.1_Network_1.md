@@ -5,7 +5,8 @@
 - [x] [`1.网络编程介绍`](#intro)
 - [x] [`2.HttpClient`](#httpc)
 - [x] [`3.HttpResponseMessage`](#httprm)
-  
+- [x] [`4.HttpContent`](#httpct)
+- [x] [`5.HttpCompletionOption 枚举`](#httpcpm)
 
 -----
 
@@ -167,7 +168,8 @@ HttpResponseMessage httpResponse = await client.GetAsync(Url);
 client.DefaultRequestHeaders.Add("Header-Name", "JxKicker");
 client.DefaultRequestHeaders.Add("Accept","application/json");
 
-IEnumerator<KeyValuePair<String, IEnumerable<String>>> enumerator = client.DefaultRequestHeaders.GetEnumerator();
+IEnumerator<KeyValuePair<String, IEnumerable<String>>> enumerator = 
+                                    client.DefaultRequestHeaders.GetEnumerator();
 //返回你所有设置过的HTTP 标头值
 while(enumerator.MoveNext())
 {
@@ -181,14 +183,15 @@ while(enumerator.MoveNext())
 ```
 
 ##### :octocat: [3.HttpResponseMessage](#top) <b id="httprm"></b> 
-`表示包括状态代码和数据的 HTTP 响应消息。`
+`表示包括状态代码和数据的 HTTP 响应消息。` [`官方API`](https://docs.microsoft.com/zh-cn/dotnet/api/system.net.http.httpresponsemessage?view=netframework-4.7.2)
 
-##### 构造函数
+
+##### 构造函数 :speech_balloon: 
 * `HttpResponseMessage()`:`初始化 HttpResponseMessage 类的新实例。`
 * `HttpResponseMessage(HttpStatusCode)`:`初始化指定的 HttpResponseMessage 的 StatusCode 类的新实例。`
 
-##### 属性
-* `Content`:`获取或设置 HTTP 响应消息的内容。`
+##### 属性 :speech_balloon: 
+* `Content :HttpContent`:`获取或设置 HTTP 响应消息的内容。` [`HttpContent:表示 HTTP 实体正文和内容标头的基类。`](https://docs.microsoft.com/zh-cn/dotnet/api/system.net.http.httpcontent?view=netframework-4.7.2) 
 * `Headers`:`获取 HTTP 响应标头的集合。`
 * `IsSuccessStatusCode`:`获取一个值，该值指示 HTTP 响应是否成功。`
 * `ReasonPhrase`:`获取或设置通常由服务器发出的原因短语（与状态代码一起发出）。`
@@ -196,8 +199,60 @@ while(enumerator.MoveNext())
 * `StatusCode`:`获取或设置 HTTP 响应的状态代码。`
 * `Version`:` 	获取或设置 HTTP 消息版本。`
 
-##### 方法 
+##### 方法 :speech_balloon: 
 * `EnsureSuccessStatusCode()`:`如果 HTTP 响应的 IsSuccessStatusCode 属性是 false，则引发异常。`
+
+##### :octocat: [4.HttpContent](#top) <b id="httpct"></b>
+`表示 HTTP 实体正文和内容标头的基类。`
+> `HttpResponseMessage的Content 属性里面存储着访问内容它的类型是 HttpContent` `那么怎么获得内容呢？`
+
+##### 构造函数 :speech_balloon: 
+* `HttpContent()`: `初始化 HttpContent 类的新实例。`
+
+##### 属性 :speech_balloon: 
+* `Headers`:`获取 RFC 2616 中定义的 HTTP 内容标头。`
+
+##### 方法
+* `ReadAsByteArrayAsync()`
+  * `将 HTTP 内容序列化到字节数组，此为异步操作。`
+  
+* `ReadAsStreamAsync()`
+  * `将 HTTP 内容序列化并返回将内容表示为异步操作的流。`
+* `ReadAsStringAsync()`
+  * `将 HTTP 内容序列化到字符串，此为异步操作。`
+* `LoadIntoBufferAsync()`
+  * `以异步操作方式将 HTTP 内容序列化到内存缓冲区。`
+* `LoadIntoBufferAsync(Int64)`
+  * `以异步操作方式将 HTTP 内容序列化到内存缓冲区。`
+* `CreateContentReadStreamAsync()`
+  * `采用异步操作将 HTTP 内容序列化到内存流。`
+* `CopyToAsync(Stream)` 	
+  * `将 HTTP 内容序列化为字节流，并将其复制到作为 stream 参数提供的流对象。`
+* `CopyToAsync(Stream, TransportContext)` 	
+
+  * `将 HTTP 内容序列化为字节流，并将其复制到作为 stream 参数提供的流对象。`
+
+* `TryComputeLength(Int64)` 	
+  * `确定 HTTP 内容是否具有有效的长度（以字节为单位）。`
+
+
+##### :octocat: [5.HttpCompletionOption 枚举](#top) <b id="httpcpm"></b>
+`指示 HttpClient 操作是在响应可利用时立即视为已完成，还是在读取包含上下文的整个答案信息之后才视为已完成。`
+
+|`值` |`说明`|
+|:-----|:-----|
+|`ResponseContentRead`|`操作应在阅读包括该内容的整个响应之后完成`|
+|`ResponseHeadersRead`|`响应一可用且标题可读时即应完成的操作。 尚未读取的内容。`|
+ 	 	
+
+
+
+
+
+
+
+
+
 
 
 --------------------
