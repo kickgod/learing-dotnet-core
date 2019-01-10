@@ -7,7 +7,9 @@
 - [x] [`3.HttpResponseMessage`](#httprm)
 - [x] [`4.HttpContent`](#httpct)
 - [x] [`5.HttpCompletionOption 枚举`](#httpcpm)
-
+- [x] [`6.HttpClientHandler 类`](#hch)
+- [x] [`7.HttpMethod 类`](#mth)
+- [x] [`8.回到正题`](#main)
 -----
 
 ##### :octocat: [1.网络编程介绍](#top) <b id="intro"></b> 
@@ -212,7 +214,7 @@ while(enumerator.MoveNext())
 ##### 属性 :speech_balloon: 
 * `Headers`:`获取 RFC 2616 中定义的 HTTP 内容标头。`
 
-##### 方法
+##### 方法 :speech_balloon: 
 * `ReadAsByteArrayAsync()`
   * `将 HTTP 内容序列化到字节数组，此为异步操作。`
   
@@ -244,16 +246,97 @@ while(enumerator.MoveNext())
 |`ResponseContentRead`|`操作应在阅读包括该内容的整个响应之后完成`|
 |`ResponseHeadersRead`|`响应一可用且标题可读时即应完成的操作。 尚未读取的内容。`|
  	 	
+##### :octocat: [6.HttpClientHandler 类](#top) <b id="hch"></b>
+`HttpClient 使用的默认消息处理程序。派生自` `System.Net.Http.HttpMessageHandler` `它只有默认的构造函数` 
+
+##### 属性 :speech_balloon:  
+* `AllowAutoRedirect`
+   * `获取或设置一个值，该值指示处理程序是否应跟随重定向响应。`
+* `AutomaticDecompression` --- `返回类型`:`System.Net.DecompressionMethods`
+   * `获取或设置处理程序用于自动解压缩 HTTP 内容响应的解压缩方法类型。` 
+* `CheckCertificateRevocationList` 	
+   * `获取或设置一个值，该值指示是否根据证书颁发机构吊销列表检查证书。`
+* `ClientCertificateOptions` 	
+   * `获取或设置一个值，该值指示是否从证书存储自动挑选证书，或者是否允许调用方通过特定的客户端证书。`
+* `ClientCertificates` 	
+   * `获取与对服务器的请求相关联的安全证书集合。`
+* `CookieContainer` 	
+   * `获取或设置用于通过处理程序存储服务器 Cookie 的 Cookie 容器。`
+* `Credentials` 	
+   * `获取或设置此处理程序使用的身份验证信息。`
+* `DangerousAcceptAnyServerCertificateValidator` 	
+   * `获取始终返回 true 的缓存委托。`
+* `DefaultProxyCredentials 	`
+   * `使用默认（系统）代理时，获取或设置要提交到默认代理服务器进行身份验证的凭据。 只有在 UseProxy 设置为 true 且 Proxy 设置为 null 时才使用默认代理。`
+   
+* `MaxAutomaticRedirections` 	
+   * `获取或设置处理程序遵循的重定向的最大数目。`
+* `MaxConnectionsPerServer `	
+   * `获取或设置使用 HttpClient 对象发出请求时允许的最大并发连接数（每个服务器终结点）。 请注意，该限制针对每个服务器终结点，例如，值为 256 表示允许 256 个到 http://www.adatum.com/ 的并发连接，以及另外 256 个到 http://www.adventure-works.com/ 的并发连接。`
+* `MaxRequestContentBufferSize` 	
+   * `获取或设置处理程序使用的最大请求内容缓冲区大小。`
+* `MaxResponseHeadersLength`
+   * `获取或设置响应标头的最大长度，以千字节（1024 字节）为单位。 例如，如果该值为 64，那么允许的最大响应标头长度为 65536 字节。`
+* `PreAuthenticate` 	
+   * `获取或设置一个值，该值指示处理程序是否随请求发送授权标头。`
+* `Properties` 	
+   * `获取 HttpClient 的自定义属性的可写字典（即地图）。 初始字典为空；可以为自定义处理程序和特殊处理插入和查询键值对。`
+* `Proxy` 	 
+   * `获取或设置处理程序使用的代理信息。`
+* `ServerCertificateCustomValidationCallback 	`
+   * `获取或设置用于验证服务器证书的回调方法。`
+* `SslProtocols` 	
+   * `获取或设置 HttpClientHandler 对象管理的 HttpClient 对象所用的 TLS/SSL 协议。`
+* `SupportsAutomaticDecompression 	`
+   * `获取一个值，该值指示处理程序是否支持自动响应内容解压缩。`
+* `SupportsProxy`
+   * `获取一个值，该值指示处理程序是否支持代理设置。`
+* `SupportsRedirectConfiguration` 	
+   * `获取一个值，该值表示处理程序是否支持 AllowAutoRedirect 和 MaxAutomaticRedirections 属性的配置设置。`
+* `UseCookies 	`
+   * `获取或设置一个值，该值指示处理程序是否使用 CookieContainer 属性来存储服务器 Cookie 并在发送请求时使用这些 Cookie。`
+* `UseDefaultCredentials` 	
+   * `获取或设置一个值，该值控制处理程序是否随请求一起发送默认凭据。`
+* `UseProxy` 	
+   * `获取或设置一个值，该值表示处理程序是否对请求使用代理。`
+
+##### 方法 :speech_balloon:  
+* `SendAsync(HttpRequestMessage, CancellationToken)` 	
+   * `基于作为不会阻止的操作在 HttpRequestMessage 中提供的信息创建 HttpResponseMessage 的实例。
+
+##### :octocat: [7.HttpMethod 类](#top) <b id="mth"></b>
+`一个帮助器类，它用于检索并比较标准 HTTP 方法并且用于创建新的 HTTP 方法。`
+
+* `构造方法: HttpMethod(String) 使用指定的 HTTP 方法初始化 HttpMethod 类的新实例。`
+##### 属性
+
+* `Delete`:`表示一个 HTTP DELETE 协议方法。`
+* `Get`:`表示一个 HTTP GET 协议方法。`
+* `Head`:`表示一个 HTTP HEAD 协议方法。 除了服务器在响应中只返回消息头不返回消息体以外，HEAD 方法和 GET 是一样的。`
+* `Method`:`HTTP 方法。`
+* `Options`:`表示一个 HTTP OPTIONS 协议方法。`
+* `Post`:`表示一个 HTTP POST 协议方法，该方法用于将新实体作为补充发送到某个 URI。`
+* `Put`:`表示一个 HTTP PUT 协议方法，该方法用于替换 URI 标识的实体。`
+* `Trace`:`表示一个 HTTP TRACE 协议方法。`
 
 
+##### :octocat: [8.回到正题](#top) <b id="main"></b>
+`HttpClient 对象调用GetAsync的时候,调用的是 SendAsync发送一个HTTP 请求。使用SendAsync,可以对定义请求有更多的控制 重载 HttpReuqestMessage类
+的构造函数,传递HttpMethod的一个值,GetAsync使用 HttpMethod.Get 创建一个HTTP 请求`
 
+```c#
+public async Task GetDataAdvanceAsync(String Url){
+    using(var client = new HttpClient){
+        var request = new HttpRequestMessage(HttpMessage.Get，Url);
+        HttpResponseMessage response = await client.SendAsync(request);
+    }
+}
+```
 
-
-
-
-
-
-
+```c#
+创建HttpRequestMessage 对象后,可以使用Header 和Content属性提供标题和内容。使用Version属性,可以指定HTTP版本。Http2.0版本支持无处不在后
+WebSocket 就会过时
+```
 
 --------------------
 `作者:` `KickGod` 
