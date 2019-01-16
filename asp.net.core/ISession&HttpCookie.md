@@ -2,10 +2,10 @@
 ------
 `Session /Cookie /Application 是一个web的基石`:white_check_mark:
 
-- [x] [`1.SessIon`](#target1)
+- [x] [`1.Session`](#target1)
 - [x] [`2.Cookie`](#target2)
 - [x] [`3.HttpApplication`](https://docs.microsoft.com/zh-cn/dotnet/api/system.web.httpapplication?view=netframework-4.7.2)
-
+- [x] [`1.ISession`](#target3)
 ------
 
 #####  :octocat: [System.Web.SessionState.HttpSessionState ](#top) <b id="target1"></b> 
@@ -134,7 +134,7 @@ HttpWebRequest request = (HttpWebRequest)WebRequest.Create(args[0]);
 request.CookieContainer = new CookieContainer();
 
 HttpWebResponse response = (HttpWebResponse) request.GetResponse();
-
+ 
 
 // Print the properties of each cookie.
 foreach (Cookie cook in response.Cookies)
@@ -193,6 +193,33 @@ Response.Cookies.Add(ck_User);
 
 ViewBag.User = Request.Cookies["User"].Values.Get("UserData");
 ViewBag.LoginTime = Request.Cookies["User"].Values.Get("LoginTime");
+```
+
+#####  :octocat: [ISession  ](#top) <b id="target3"></b>
+`在 ASP.NET Core中的Session 是重写的,实现ISessio 接口`
+
+##### 属性
+* `Id`:`获得SessionId`
+
+* `Keys`:`获取所有的键`
+
+##### 方法
+* `Clear()`:`消除所有的Session 值`
+* `CommitAsync(CancellationToken)`:	`异步存储Session`
+
+* `LoadAsync(CancellationToken)`:`异步加载数据` 	
+* `Remove(String)`:`通过键获得值`
+* `Set(String, Byte[])`:`存储对象 但是需要编码`
+* `TryGetValue(String, Byte[])`:`尝试获取值` 	
+
+##### Session 扩展方法
+`Session 扩展方法,通过此可以存储或获取特定类型的值`
+```c#
+Get(ISession, String)
+GetInt32(ISession, String)
+GetString(ISession, String)
+SetInt32(ISession, String, Int32)
+SetString(ISession, String, String)
 ```
 
 --------------------
