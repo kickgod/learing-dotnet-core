@@ -5,6 +5,7 @@
 
 - [x] [`1.参数绑定实例`](#target1)
 - [x] [`2.参数特性`](#target2)
+- [x] [`3.ModelState`](#target3)
 
 
 ------
@@ -82,8 +83,48 @@ public class User
 //页面结果
 JKXIHSDKND5845 78
 ```
+#####  :octocat: [3.ModelState](#top) <b id="target3"></b> 
+`ModelState 我们通常在方法中用此判断模型绑定是否正确 那么我们来认识一下这个对象吧,它属于类` [`ModelStateDictionary`](https://docs.microsoft.com/zh-cn/dotnet/api/system.web.modelbinding.modelstatedictionary?view=netframework-4.7.2&viewFallbackFrom=netcore-2.2)
 
+##### 属性 :speech_balloon: 
+* `Count`: 	`获取集合中键/值对的数目。`
+* `IsReadOnly`:`获取一个值，该值指示字典是否为只读。`
+* `IsValid`:`获取指示字典中所有模型状态对象是否有任何错误的值。`
+* `Item[String]`:`获取或设置与指定的键关联的值。返回` [`ModelStateEntry`](https://docs.microsoft.com/zh-cn/dotnet/api/microsoft.aspnetcore.mvc.modelbinding.modelstateentry?view=aspnetcore-2.2) `类型`
+* `Keys`:`获取包含词典中的键的集合。`
+* `Values`:`获取包含词典中的值的集合。`
 
+##### 方法
+* `GetEnumerator()`:`返回一个可用于循环访问字典的枚举器。`
+* `AddModelError(String, Exception)`:`使用指定的密钥和使用指定值异常，添加一个模型错误到错误集合。`
+* `AddModelError(String, String)`:`使用指定的密钥和使用指定值错误消息，添加指定的模型错误到错误集合。`
+* `TryGetValue(String, ModelState)`:`尝试获取与指定的键关联的值。`
+
+```c#
+public IActionResult LoginUser([FromQuery] [BindRequired] String Name ,
+[FromQuery,BindRequired]Int32 Age) {
+
+    var count = ModelState.Count;
+    var name =ModelState["Name"].RawValue; //获取Name
+    if (ModelState.IsValid)
+    {
+
+        ViewBag.Name = Name;
+        ViewBag.Age = Age;
+        
+        ViewBag.ModelName = name;
+        ViewBag.Count = count; //绑定了多少个值 
+    }
+    else {
+        ViewBag.Name = "不明";
+        ViewBag.Age = "不明";
+
+        ViewBag.ModelName = "不明";
+        ViewBag.Count = 0;
+    }
+    return View();
+}
+```
 
 --------------------
 `作者:` `KickGod` 
