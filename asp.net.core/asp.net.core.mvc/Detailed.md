@@ -7,6 +7,9 @@
 - [x] [`2.提取页面重复部分`](#target2)
 - [x] [`3.TempData/Cache/Session`](#target3)
 - [x] [`4.文件路径的问题`](#target4)
+- [x] [`5._ViewStart.cshtml 是什么？`](#target5)
+- [x] [`6._ViewImports.cshtml 是什么？`](#target6)
+- [x] [`7.数据验证探究`](#target7)
 
 ------
 
@@ -19,7 +22,8 @@
 |`支持任意类型`|`动态属性`|
 
 ```c#
-public IActionResult LoginUser([FromQuery] [BindRequired] String Name ,[FromQuery,BindRequired]Int32 Age) {
+public IActionResult LoginUser([FromQuery] [BindRequired] String Name ,
+[FromQuery,BindRequired]Int32 Age) {
     if (ModelState.IsValid)
     {
         ViewData["Name"] = Name;
@@ -214,6 +218,48 @@ string contentRootPath = _hostingEnvironment.ContentRootPath;
 ```
 * `webRootPath`:`wwwroot 文件夹路径`
 * `ContentRootPath`:`网站根目录`
+#####  :octocat: [5. _ViewStart.cshtml 是什么？](#top) <b id="target5"></b>
+`注意:名称固定,不能改变,一般放在视图目录根目录下面,自动执行无需手工调用`
+* `视图呈现之前执行`
+* `可以做全局数据初始化,比如模板指定 `
+* `不要在视图中做大量的业务操作`
+
+`默认内容：配置母版页`
+```c#
+@{
+    Layout = "_Layout";
+}
+```
+#####  :octocat: [6. _ViewImports.cshtml 是什么？_](#top) <b id="target6"></b>
+`名称可以看出来是引入,因为我们要在 Razor 中使用对象,需要在 @{ } 指定命名空间的,对于功能的命名空间可以在 Import里面公共引用,
+好做一个公共的维护,对于一些全局引用`
+* `不要在视图中做大量的业务操作，视图目录下的根目录下`
+
+`默认内容 引入项目命名空间 和模型类 和TagHelper`
+```cshtml
+@using Demo  
+@using Demo.Models
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+```
+#####  :octocat: [7.数据验证探究](#top) <b id="target7"></b>
+[`数据验证特性`](https://docs.microsoft.com/zh-cn/dotnet/api/system.componentmodel.dataannotations.validationattribute?view=netframework-4.7.2) `都是实现的这个 ValidationAttribute 特性`
+
+* `Required、StringLength、RegularExpression 和 Max,Min Range...都是内置的验证类`
+
+* `Required 和 MinimumLength 特性表示属性必须有值；但用户可输入空格来满足此验证。`
+
+* `[Display(Name = "Release Date")]`:`展示名称`
+* `[DataType(DataType.Date)]`:`日期类型`
+* `RegularExpression 特性用于限制可输入的字符。 在上述代码中，Genre 和 Rating 必须使用纯字母（禁用首字母大写、空格、数字和特殊字符）。`
+* `Range 特性将值限制在指定范围内。`
+* `StringLength 特性使你能够设置字符串属性的最大长度，以及可选的最小长度。`
+* `从本质上来说，需要值类型（如 decimal、int、float、DateTime），但不需要 [Required] 特性。`
+
+##### 使用
+`定义强类型视图并床底包含验证规则的业务数据模型`
+* `使用HtmlHelperValidationFor 初始化前端验证规则`
+
+* `使用HtmlHelperValidationMessageFor 生成提示文字`
 
 
 
