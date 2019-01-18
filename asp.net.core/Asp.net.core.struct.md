@@ -139,6 +139,10 @@ public void ConfigureServices(IServiceCollection services)
 //方法参数都是依赖注入的
 public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 {
+    // 你会发现你的页面写错了 浏览器页面会报错各种代码异常信息 
+    // 这就是下面四行代码的作用 
+    // 对于程序开发过程中 捕获异常并且暂时在错误页面
+    // IHostingEnvironment 可以自动获取系统运行环境 环境一般有开发环境  和 生产环境 预览环境 isStatging
     if (env.IsDevelopment())
     {
         app.UseDeveloperExceptionPage();
