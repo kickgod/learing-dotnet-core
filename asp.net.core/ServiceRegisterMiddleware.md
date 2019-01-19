@@ -35,7 +35,15 @@ Logger 中间件又把请求信息对象 传递给 授权中间件 授权中间�
 
 
 ##### 系统默认配置的中间件
-
+`以下 Startup.Configure 方法将为常见应用方案添加中间件组件：`
+* `异常/错误处理`
+* `HTTP 严格传输安全协议`
+* `HTTPS 重定向`
+* `静态文件服务器`
+* `Cookie 策略实施`
+* `身份验证`
+* `会话`
+* `MVC`
 ```c#
 public void Configure(IApplicationBuilder app)
 {
@@ -96,11 +104,29 @@ if (env.IsDevelopment())
     app.UseDeveloperExceptionPage();
 }
 
+//我们自己来写一个中间件 中间件 返回的内容是一个 task 类型的 参数为 HttpContext
+app.Use(next =>
+{
+    return async httpContext =>
+    {
+        if (httpContext.Request.Path.StartsWithSegments("/first"))
+        {
+            await httpContext.Response.WriteAsync("First!!!! text Hello 你好啊");
+        }
+        else
+        {
+            await next(httpContext);
+        }
+    };
+});
+
 app.Run(async (context) =>
 {
     await context.Response.WriteAsync("Hello World!");
 });
 ```
+`自己实现一个中间件 ... next 参数是RequestDelegate 委托`
+<br/>
 **`我们需要使用 `**
 #####  :octocat: [3.注册一个服务吧](#top) <b id="target3"></b> 
 `先看结果你就懂了 服务 其实就是一个接口,需要做的就是 把接口对应一个实现者,对的 就是依赖注入。` 
@@ -115,7 +141,8 @@ app.Run(async (context) =>
 
 |`服务`|`说明`|`使用方式`|
 |:-----|:------|:------|
-|[`IHostingEnvironment`](https://docs.microsoft.com/zh-cn/dotnet/api/microsoft.aspnetcore.hosting.ihostingenvironment?view=aspnetcore-2.2)|`获得系统环境 比如引用环境 web路径`|`使用依赖注入可以获得`|
+|[`Microsoft.AspNetCore.Hosting.IHostingEnvironment`](https://docs.microsoft.com/zh-cn/dotnet/api/microsoft.aspnetcore.hosting.ihostingenvironment?view=aspnetcore-2.2)|`获得系统环境 比如引用环境 web路径`|`使用依赖注入可以获得`|
+|[`Microsoft.Extensions.Logging.ILogger<T>`](https://docs.microsoft.com/zh-cn/dotnet/api/microsoft.extensions.logging.ilogger?view=aspnetcore-2.2)|`日志记录 他有许多的方法 可以做日志记录`|`依赖注入 T 为使用在那个类中`|
 
 `我们要在 注册服务`
 ```c#
@@ -183,7 +210,62 @@ public class Startup
 }
 
 ```
+`dotnet run 运行它 然后你会发现 文字变了`
+##### 使用日志服务 
+`依赖注入进去就行  几乎在 asp.net core 的每一个地方都支持依赖注入`
+```c#
+public class Startup
+{
 
+    public void ConfigureServices(IServiceCollection services)
+    {
+       services.AddSingleton<ILoginInfoService,LoginInfoService>();
+    }
+
+    public void Configure(
+     IApplicationBuilder app,
+     IHostingEnvironment env,
+     ILoginInfoService info,
+     ILogger<Startup> log)
+    {
+
+        if (env.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+        }
+
+        String info_ = info.Message();
+
+        app.Use(next =>
+        {
+            log.LogInformation("it run start in  app.Use");
+            return async httpContext =>
+            {
+                if (httpContext.Request.Path.StartsWithSegments("/first"))
+                {
+                    log.LogInformation("it run start in  app.Run url: /first");
+                    httpContext.Response.ContentType = "text/plain;charset=utf-8";
+                    await httpContext.Response.WriteAsync("First!!!! text Hello 你好啊");
+                }
+                else
+                {
+                    log.LogInformation("next middleware ---->");
+                    await next(httpContext);
+                }
+            };
+        });
+
+
+        app.Run(async (context) =>
+        {
+            log.LogInformation("it run start in  app.Run");
+            context.Response.ContentType = "text/plain;charset=utf-8";
+            await context.Response.WriteAsync(info_);
+        });
+    }
+}
+
+```
 
 --------------------
 `作者:` `KickGod` 
