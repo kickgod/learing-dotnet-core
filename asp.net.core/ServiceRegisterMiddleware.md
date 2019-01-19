@@ -10,8 +10,10 @@
 ------
 
 #####  :octocat: [1.中间件](#top) <b id="target1"></b> 
-`中间件是一种独立的系统软件或服务程序，分布式应用软件借助这种软件在不同的技术之间共享资源 ASP.NET Core使用中间件完成功能` 
+`中间件是一种独立的系统软件或服务程序，分布式应用软件借助这种软件在不同的技术之间共享资源 ASP.NET Core使用中间件完成功能 
+在 Asp.net core 中 中间件是一种装配到应用管道以处理请求和响应的软件。每个组件：1.选择是否将请求传递到管道中的下一个组件。2.可在调用管道中的下一个组件前后执行工作。` 
 [`ASP.NET Core 官方 中间件解释手册`](https://docs.microsoft.com/zh-cn/aspnet/core/fundamentals/middleware/index?view=aspnetcore-2.2)
+
 * `MVC 就是一种中间件`
 `定义 使用MVC 中间件,那么整个 ASP.NET Core 就是 MVC模式了`
 ```c#
@@ -26,6 +28,10 @@ app.UseMvc(routes =>
 Logger 中间件又把请求信息对象 传递给 授权中间件 授权中间件判别用户权限后  再将请求传递给 路由中间件  路由中间件 分析路由然后将请求交给特定的方法处理得到
 得到相应 HttpResponse 响应结果可能是 JSON,XML,JSON,图片,视频等等资源类型 然后响应再通过路由中间件 传递给授权中间件 再到 Logger 中间件 最后发送给
 用户。`
+
+----
+
+![`zjj`](./resources/middleware.png)
 
 
 ##### 系统默认配置的中间件
