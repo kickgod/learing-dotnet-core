@@ -1,4 +1,4 @@
-### [ASP.NET Core 服务注册 与 中间件 ](#top) :grey_exclamation: <b id="top"></b>
+### [ASP.NET Core 中间件 与 服务注册   ](#top) :grey_exclamation: <b id="top"></b>
 `中间件和服务注册`:white_check_mark:
 
 ------
@@ -102,7 +102,10 @@ app.Run(async (context) =>
 
 
 ##### [框架提供的服务](https://docs.microsoft.com/zh-cn/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-2.2#framework-provided-services)
-`asp.net core 框架提供了很多的服务可供使用,日志服务 路由 Http 请求....`
+`asp.net core 框架提供了很多的服务可供使用,日志服务 路由 Http 请求....` 
+* **`注意`**:` NetCore 2.0之后 程序默认自带 依赖注入框架 Ninject .netstandard2.0 程序集为 Microsoft.Extensions.DependencyInjection.dll。所以可以通过注册服务完成依赖注入  而不再需要其他的依赖注入框架`
+
+
 
 |`服务`|`说明`|`使用方式`|
 |:-----|:------|:------|
@@ -116,7 +119,7 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 ##### 服务的生存周期
-`为每个注册的服务选择适当的生存期。 可以使用以下生存期配置 ASP.NET Core 服务：`
+`为每个注册的服务选择适当的生存期。 可以使用以下生存期配置 ASP.NET Core 服务：` [`理解依赖注入三种生命周期`](https://www.cnblogs.com/gdsblog/p/8465101.html)
 * `暂时`:`暂时生存期服务是每次请求时创建的。 这种生存期适合轻量级、 无状态的服务。`  
    * `例子 services.Transient<IOperationTransient, Operation>()`
    
@@ -125,13 +128,55 @@ public void ConfigureServices(IServiceCollection services)
 * `单例`:`单一实例生存期服务是在第一次请求时（或者在运行 ConfigureServices 并且使用服务注册指定实例时）创建的。 每个后续
 请求都使用相同的实例。 如果应用需要单一实例行为，建议允许服务容器管理服务的生存期。 不要实现单一实例设计模式并提供用户代码来
 管理对象在类中的生存期。`
+   *  `services.Singleton<IOperationTransient, Operation>() `
 
 ```
 在中间件内使用有作用域的服务时，请将该服务注入至 Invoke 或 InvokeAsync 方法。 请不要通过构造函数注入进行注入，因
 为它会强制服务的行为与单一实例类似。 有关更多信息，请参见ASP.NET Core 中间件。
 ```
 
+```c#
+public interface ILoginInfoService
+{
+    String Message();
+}
 
+public class LoginInfoService:ILoginInfoService
+{
+    public String Message(){
+        return "这是我自己配置的服务哟";
+    }
+}
+```
+`在 startup 类中 注册并使用`
+```c#
+public class Startup
+{
+
+    public void ConfigureServices(IServiceCollection services)
+    {
+       services.AddSingleton<ILoginInfoService,LoginInfoService>(); //依赖注入 注册服务
+    }
+
+    public void Configure(IApplicationBuilder app, IHostingEnvironment env,ILoginInfoService info)
+    {
+        if (env.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+        }
+
+        String info_ = info.Message();
+
+
+        app.Run(async (context) =>
+        {
+            context.Response.ContentType = "text/plain;charset=utf-8"; //指定编码格式 不然可能乱码
+            await context.Response.WriteAsync(info_);
+        });
+    }
+}
+
+```
 
 
 --------------------
