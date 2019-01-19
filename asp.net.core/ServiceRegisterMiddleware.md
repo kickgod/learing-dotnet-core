@@ -5,6 +5,7 @@
 
 - [x] [`1.中间件`](#target1)
 - [x] [`2.配置中间件`](#target2)
+    -  [`2.1 内置中间件`](#innermid)
 - [x] [`3.注册一个服务吧`](#target3)
 
 ------
@@ -24,6 +25,12 @@ app.UseMvc(routes =>
         template: "{controller=Home}/{action=Index}/{id?}");
 });
 ```
+`中间件就是 挨个 得到请求信息 做出自己的处理 或者信息的获取`
+
+----
+
+![`zjj`](https://docs.microsoft.com/zh-cn/aspnet/core/fundamentals/middleware/index/_static/request-delegate-pipeline.png?view=aspnetcore-2.2)
+
 `对于Asp.net core 中间件的流程就是 将用户请求传递的管道 web 服务接受一个 用户请求,首先可以将请求传递给 Logger 中间件记录 请求信息日志 处理完毕后
 Logger 中间件又把请求信息对象 传递给 授权中间件 授权中间件判别用户权限后  再将请求传递给 路由中间件  路由中间件 分析路由然后将请求交给特定的方法处理得到
 得到相应 HttpResponse 响应结果可能是 JSON,XML,JSON,图片,视频等等资源类型 然后响应再通过路由中间件 传递给授权中间件 再到 Logger 中间件 最后发送给
@@ -98,36 +105,53 @@ public void Configure(IApplicationBuilder app)
 `IApplicationBuilder app 这个接口是用来精确配置 中间件的 一个初始化的 ASP.NET Core Web 项目模式只是配置了两个中间件`
 `app.Run是一个非常简单的中间件 默认配置的 context 是 HttpContext 就是 请求内容 床底然后 简单的响应一个 Hello World! 所有的请求Url路径
 都返回 Hello World!文本  要想让 用户可以请求其他资源 我们需要使用其他的 中间件处理用户请求 ` 
+* `IApplicationBuilder  用于 创建中间件管道`
 ```c#
-if (env.IsDevelopment())
+public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 {
-    app.UseDeveloperExceptionPage();
-}
-
-//我们自己来写一个中间件 中间件 返回的内容是一个 task 类型的 参数为 HttpContext
-app.Use(next =>
-{
-    return async httpContext =>
+    if (env.IsDevelopment())
     {
-        if (httpContext.Request.Path.StartsWithSegments("/first"))
-        {
-            await httpContext.Response.WriteAsync("First!!!! text Hello 你好啊");
-        }
-        else
-        {
-            await next(httpContext);
-        }
-    };
-});
+        app.UseDeveloperExceptionPage();
+    }
 
-app.Run(async (context) =>
-{
-    await context.Response.WriteAsync("Hello World!");
-});
+    //我们自己来写一个中间件 中间件 返回的内容是一个 task 类型的 参数为 HttpContext
+    app.Use(next =>
+    {
+        return async httpContext =>
+        {
+            if (httpContext.Request.Path.StartsWithSegments("/first"))
+            {
+                await httpContext.Response.WriteAsync("First!!!! text Hello 你好啊");
+            }
+            else
+            {
+                await next(httpContext);
+            }
+        };
+    });
+
+    app.Run(async (context) =>
+    {
+        await context.Response.WriteAsync("Hello World!");
+    });
+}
 ```
 `自己实现一个中间件 ... next 参数是RequestDelegate 委托`
 <br/>
-**`我们需要使用 `**
+#####  :octocat: [2.1 内置中间件](#top) <b id="innermid"></b> 
+[`官方 内置中间件 手册 可以查看中间件详情内容`](https://docs.microsoft.com/zh-cn/aspnet/core/fundamentals/middleware/?view=aspnetcore-2.2#built-in-middleware)
+
+|`中间件名称`|`说明`|`中间件顺序`|
+|:----|:----|:----|
+|`CORS`|`配置跨域资源共享.`|`在使用 CORS 的组件之前。`|
+|`身份验证`|`提供身份验证支持`|`在需要 HttpContext.User 之前。 OAuth 回叫的终端。`|
+|`HTTPS 重定向`|`将所有 HTTP 请求重定向到 HTTPS（ASP.NET Core 2.1 或更高版本）。`|`在使用 URL 的组件之前。`|
+|`静态文件`|`为提供静态文件和目录浏览提供支持`|`如果请求与文件匹配，则为终端。`|
+|`WebSockets`|`启用 WebSockets 协议`|`在接受 WebSocket 请求所需的组件之前`|
+|`会话`|`提供对管理用户会话的支持`|`在需要会话的组件之前`|
+|`MVC`|`用 MVC/Razor Pages 处理请求（ASP.NET Core 2.0 或更高版本）。`|`如果请求与路由匹配，则为终端。`|
+
+ 	 	
 #####  :octocat: [3.注册一个服务吧](#top) <b id="target3"></b> 
 `先看结果你就懂了 服务 其实就是一个接口,需要做的就是 把接口对应一个实现者,对的 就是依赖注入。` 
 [`官方依赖注入服务手册`](https://docs.microsoft.com/zh-cn/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-2.2)
