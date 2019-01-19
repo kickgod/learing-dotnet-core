@@ -145,7 +145,7 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env)
     // IHostingEnvironment 可以自动获取系统运行环境 环境一般有开发环境  和 生产环境 预览环境 isStatging
     if (env.IsDevelopment())
     {
-        app.UseDeveloperExceptionPage();
+        app.UseDeveloperExceptionPage();//这是一个中间件
     }
 
     app.Run(async (context) =>
