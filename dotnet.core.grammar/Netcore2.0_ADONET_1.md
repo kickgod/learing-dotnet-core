@@ -72,7 +72,7 @@ namespace libCsharp.DataBase
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
             builder.DataSource = "47.98.215.212"; //数据库地址
             builder.InitialCatalog = "demo"; //数据库名称
-            builder.IntegratedSecurity = true; //这个意思是 使用windows 方式验证 不要用
+            builder.IntegratedSecurity = false; //这个意思是 使用windows 方式验证 不要用 一定要设置为 false 默认也是 false
 
             builder.UserID = "kicker";
             builder.Password = "123456";
