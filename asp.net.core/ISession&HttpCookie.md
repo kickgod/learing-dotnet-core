@@ -5,7 +5,9 @@
 - [x] [`1.Session`](#target1)
 - [x] [`2.Cookie`](#target2)
 - [x] [`3.HttpApplication`](https://docs.microsoft.com/zh-cn/dotnet/api/system.web.httpapplication?view=netframework-4.7.2)
-- [x] [`1.ISession`](#target3)
+- [x] [`4.ISession`](#target3)
+- [x] [`5.ASP.NET Core 使用 Session`](#target5)
+
 ------
 
 #####  :octocat: [System.Web.SessionState.HttpSessionState ](#top) <b id="target1"></b> 
@@ -95,7 +97,8 @@ Session.RemoveAll();//从回话状态中移除所有键值
 ```
 
 #####  :octocat: [System.Net. Cookie  ](#top) <b id="target2"></b> 
-`提供一组用于管理 Cookie 的属性和方法。 此类不能被继承。`
+`提供一组用于管理 Cookie 的属性和方法。 此类不能被继承。 在 ASP.NET Core 中使用 Cookie 和在 ASP.NET 中完全不一样
+Core 提供了一套自己的身份验证授权架构 所以显得十分的麻烦`
 
 ##### 构造函数
 * `Cookie()`:`初始化 Cookie 类的新实例。`
@@ -221,6 +224,40 @@ GetString(ISession, String)
 SetInt32(ISession, String, Int32)
 SetString(ISession, String, String)
 ```
+
+#####  :octocat: [5 Microsoft.AspNetCore.Session  ](#top) <b id="target5"></b> 
+`在 ASP.NET Core 中Session 不是自备在框架中的 要使用它 需要引入 Nuget 包`
+* `1.安装 Microsoft.AspNetCore.Session `
+
+`其次就算引用了也要注册 Session 中间件 才能够正常使用`
+* `2.中间件使用 在 Startup 类的 Configure 方法中`
+
+```c#
+//使用 Session  依赖:Microsoft.AspNetCore.Session 
+app.UseSession();
+```
+* `3.ConfigureServices 配置`
+```c#
+services.Configure<CookiePolicyOptions>(options =>
+{
+    options.CheckConsentNeeded = context => false; //一定是 false 不然存了找不到
+    options.MinimumSameSitePolicy = SameSiteMode.None;
+});
+```
+* `4.正常使用`
+```c#
+HttpContext.Session.SetString("uid",UserId);
+HttpContext.Session.SetString("upd",UserPassword);
+
+
+String id = HttpContext.Session.GetString("uid");
+String upd = HttpContext.Session.GetString("upd");
+```
+
+
+
+
+
 
 --------------------
 `作者:` `KickGod` 
