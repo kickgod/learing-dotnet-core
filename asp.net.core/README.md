@@ -6,3 +6,7 @@ ASP.NET Core 是一个跨平台的高性能开源框架，用于生成基于云�
 * 在 Windows、macOS 和 Linux 上使用喜爱的开发工具。
 * 部署到云或本地。
 * 在 .NET Core 或 .NET Framework 上运行。
+
+##### 推荐博客
+
+- [x] [`ASP.NET Core 博客:烟雨朦胧`](http://www.cnblogs.com/RainingNight/p/introduce-basic-authentication-in-asp-net-core.html)
