@@ -1,6 +1,9 @@
 ### [ASP.NET Core Session / Cookie](#top) :grey_exclamation: <b id="top"></b>
 ------
-`Session /Cookie /Application 是一个web的基石`:white_check_mark:
+`Session /Cookie /Application 是一个web的基石`:white_check_mark: 
+
+**`我要告诉你一件事情,ASP.NET Core 是一个高度组件化的框架所以说,Cookie 已经被高度组件化了,只能够使用身份认证和授权功能来存储Cookie。Cookie 在
+ASP.NET Core 中不能类似于 ASP.NET 哪样使用了但是 Session 可以任意使用 但是使用方式已经变了`**
 
 - [x] [`1.Session`](#target1)
 - [x] [`2.Cookie`](#target2)
@@ -99,6 +102,10 @@ Session.RemoveAll();//从回话状态中移除所有键值
 #####  :octocat: [System.Net. Cookie  ](#top) <b id="target2"></b> 
 `提供一组用于管理 Cookie 的属性和方法。 此类不能被继承。 在 ASP.NET Core 中使用 Cookie 和在 ASP.NET 中完全不一样
 Core 提供了一套自己的身份验证授权架构 所以显得十分的麻烦`
+
+- [`ASP.NET Core Authentication`](http://www.cnblogs.com/RainingNight/p/authentication-in-asp-net-core.html#iauthenticationschemeprovider)
+
+- [`ASP.NET Core 身份标识和 授权`](http://www.cnblogs.com/RainingNight/p/introduce-basic-authentication-in-asp-net-core.html)
 
 ##### 构造函数
 * `Cookie()`:`初始化 Cookie 类的新实例。`
