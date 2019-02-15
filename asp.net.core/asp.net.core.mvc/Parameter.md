@@ -6,6 +6,7 @@
 - [x] [`1.参数绑定实例`](#target1)
 - [x] [`2.参数特性`](#target2)
 - [x] [`3.ModelState`](#target3)
+- [x] [`4.ModelState 错误参数`](#target4)
 
 
 ------
@@ -125,7 +126,27 @@ public IActionResult LoginUser([FromQuery] [BindRequired] String Name ,
     return View();
 }
 ```
+#####  :octocat: [4.ModelState 错误参数(#top) <b id="target4"></b> 
 
+```c#
+if (!ModelState.IsValid)
+{
+    List<string> sb = new List<string>();
+    //获取所有错误的Key
+    List<string> Keys = ModelState.Keys.ToList();
+    //获取每一个key对应的ModelStateDictionary
+    foreach (var key in Keys)
+    {
+        var errors = ModelState[key].Errors.ToList();
+        //将错误描述添加到sb中
+        foreach (var error in errors)
+        {
+            sb.Add(error.ErrorMessage);
+        }
+    }
+    return Json(sb);
+} 
+```
 --------------------
 `作者:` `KickGod` 
 `完成时间`:`2018年12月31日18:33:38`
